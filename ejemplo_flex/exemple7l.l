@@ -7,6 +7,8 @@ Exemple 7: ID := DIGIT
 */
 
 /***************************************************/
+%option noyywrap
+
 %{
 #include <stdio.h>
 #include <stdlib.h>
