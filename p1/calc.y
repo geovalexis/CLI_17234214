@@ -11,20 +11,22 @@ extern FILE *yyout;
 extern int yylineno;
 extern int yylex();
 extern void yyerror(const char * s);
+char* varToString(sym_value_type var);
+
 
 %}
+
+%code requires {
+	#include "symtab.h"
+}
 
 
 %union{
 	struct{
 		char *nom;		
-		void *value;
-		enum tipus{
-			entero, 
-			real, 
-			cadena, 
-			boolean}tipo;
+		sym_value_type value;
 	}variable;
+	sym_value_type expr;
 	int entero;
 	float real;
 	char *str;
@@ -33,50 +35,80 @@ extern void yyerror(const char * s);
 
 %token <variable> ID
 %token <entero> INTEGER 
-%token <float> REAL 
-%token <str> CADENA 
+%token <real> REAL 
+%token <str> CADENA
 %token <boolean> BOOLEAN
 %token ASSIGN POTENCIA MAYOR_QUE MENOR_QUE MAYOR_IGUAL_QUE MENOR_IGUAL_QUE IGUAL_QUE DIFF_DE BOOL_TRUE BOOL_FALSE SUMA RESTA MULTIPLICACION DIVISION MODULO AND NEG OR
 
+%type <expr> expresion
+
+%%
+
+
+lista_sentencias : sentencia | lista_sentencias sentencia;
+
+sentencia: expresion_aritm | expresion_bool | asignacion;
+
+asignacion : ID ASSIGN expresion { $1.value = $3;
+				  sym_enter($1.nom, &$1.value);
+				  fprintf(yyout,"ID: %s es %s\n",$1.nom, varToString($1.value));
+}
+;
+
+expresion: INTEGER { $$.tipo=entero; $$.valor.entero=$1;} |
+	   REAL { $$.tipo=real; $$.valor.real=$1;} |
+	   CADENA { $$.tipo=cadena; $$.valor.cadena=$1;} |
+	   BOOLEAN { $$.tipo=boolean; $$.valor.boolean=$1;}
+;
+
+expresion_aritm: SUMA;
+
+expresion_bool: BOOLEAN;
 
 
 %%
 
-lista_sentencias : expressio | lista_sentencias expressio;
+char* varToString(sym_value_type var){
+   char *buffer = malloc(sizeof(char)*100);
+   switch (var.tipo) 
+   {
+	case 0: sprintf(buffer, "un entero con valor %d", var.valor.entero); break;
+	case 1: sprintf(buffer, "un real con valor %.3f", var.valor.real); break;
+	case 2: sprintf(buffer, "una cadena con valor %s", var.valor.cadena); break;
+	case 3: sprintf(buffer, "un booleano con valor %s", var.valor.boolean ? "true" : "false");break;
+	default: sprintf(buffer, "not found");
+   }
+   return buffer;
+}
 
-expressio : ID ASSIGN INTEGER {
-				fprintf(yyout,"ID: %s pren per valor: %d\n",$<variable>1.nom, $3);
-				}
-
-%%
 
 int init_analisi_sintactic(char* filename){
 
-int error = EXIT_SUCCESS;
+	int error = EXIT_SUCCESS;
 
-yyout = fopen(filename,"w");
+	yyout = fopen(filename,"w");
 
-if (yyout == NULL){
+	if (yyout == NULL){
 
-error = EXIT_FAILURE;
+	error = EXIT_FAILURE;
 
-}
+	}
 
-return error;
+	return error;
 
 }
 
 int analisi_semantic(){
-int error;
+	int error;
 
- if (yyparse() == 0)
- {
- error =  EXIT_SUCCESS;
- } else {
- error =  EXIT_FAILURE;
- }
+	 if (yyparse() == 0)
+	 {
+	 error =  EXIT_SUCCESS;
+	 } else {
+	 error =  EXIT_FAILURE;
+	 }
 
- return error;
+	 return error;
 
 }
 

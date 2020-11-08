@@ -8,7 +8,7 @@ ELEX = calc.l
 EYACC = calc.y
 OBJ = calc.o calc.o calc.o
 
-SRC = calc.c
+SRC = calc.c symtab.c
 SRCL = calc.flex.c
 SRCY = calc.tab.c #Se genera tambien un calc.tab.h
 
