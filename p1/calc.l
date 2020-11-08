@@ -88,9 +88,9 @@ cerrar_par ")"
 				return ID;}	
 
 
-{comentario_linea}+(.)*  {}
+{comentario_linea}+(.)*  {return FIN_SENTENCIA;}
 
-{comentario_bloque_abrir} {BEGIN(comment);} 	/* activar condición */
+{comentario_bloque_abrir} {BEGIN(comment); return FIN_SENTENCIA;} 	/* activar condición */
 <comment>[^*{linebreak}]*  {}	/* eat anything that's not a '*'  */
 <comment>"*"+[^*/{linebreak}]* {}	/* eat up '*' not followed by '/'s  */ 
 <comment>{linebreak}  {}

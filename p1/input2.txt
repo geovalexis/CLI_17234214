@@ -1,0 +1,17 @@
+// assignacions
+x := 1.5
+i := 5
+z := i * (x + i) - i / 4.0
+s := "Hola"
+
+// expressions bàsiques
+x
+i
+z
+s
+b
+/*
+* expressions
+*/
+i + i * 2
+- i + x

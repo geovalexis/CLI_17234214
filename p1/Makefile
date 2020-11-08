@@ -3,7 +3,7 @@ CC = gcc
 LEX = flex
 YACC = bison
 
-LIB = -lc 
+LIB = -lc -lm
 ELEX = calc.l
 EYACC = calc.y
 OBJ = calc.o calc.o calc.o
