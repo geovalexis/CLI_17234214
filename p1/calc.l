@@ -30,6 +30,8 @@ div "/"
 mod "mod"
 pot "**"
 asignacion ":="
+abrir_par "("
+cerrar_par ")"
 
 %%
 
@@ -45,26 +47,29 @@ asignacion ":="
 {ini_fin_cadena}.*{ini_fin_cadena} 	{yylval.str = (char *)malloc(sizeof(char)*yyleng);
 					 strncpy(yylval.str,yytext,yyleng);
 					 return CADENA;}			
-{suma} {return SUMA;}
+{suma} {return SUM;}
 
-{resta}[^/{digit}] {return RESTA;}
+{resta}[^/{digit}] {return REST;}
 
-{mult}[^/{mult}] {return MULTIPLICACION;}
+{mult}[^/{mult}] {return MUL;}
 
 {pot} {return POTENCIA;}
 
-{div}[^/*] {return DIVISION;}
+{div}[^/*] {return DIV;}
 
-{mod} {return MODULO;}
+{mod} {return MOD;}
 
+{abrir_par} {return ABRIR_PAR;}
+
+{cerrar_par} {return CERRAR_PAR;}
 
  /* comparadores booleanos */
-">"  {return MAYOR_QUE;}
-">=" {return MAYOR_IGUAL_QUE;}
-"<" {return MENOR_QUE;} 
-"<=" {return MENOR_IGUAL_QUE;}
-"=" {return IGUAL_QUE;}
-"<>" {return DIFF_DE;}
+">"  {return GT;}
+">=" {return GE;}
+"<" {return LT;} 
+"<=" {return LE;}
+"=" {return EQ;}
+"<>" {return NE;}
 
  /* operadores booleanos */
 "not" {return NEG;}
@@ -91,7 +96,7 @@ asignacion ":="
 <comment>{linebreak}  {}
 <comment>{comentario_bloque_cerrar} {BEGIN(INITIAL);} 	/* restaurar estado del sistema */
 
-{linebreak} {} /* eat up linebreaks */
+{linebreak} {} {return FIN_SENTENCIA;}/* eat up linebreaks */
 
 {espacio}+  {} /* eat up whitespaces */
 

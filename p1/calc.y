@@ -38,32 +38,51 @@ char* varToString(sym_value_type var);
 %token <real> REAL 
 %token <str> CADENA
 %token <boolean> BOOLEAN
-%token ASSIGN POTENCIA MAYOR_QUE MENOR_QUE MAYOR_IGUAL_QUE MENOR_IGUAL_QUE IGUAL_QUE DIFF_DE BOOL_TRUE BOOL_FALSE SUMA RESTA MULTIPLICACION DIVISION MODULO AND NEG OR
+%token ASSIGN POTENCIA GT LT GE LE EQ NE BOOL_TRUE BOOL_FALSE SUM REST MUL DIV MOD AND NEG OR FIN_SENTENCIA ABRIR_PAR CERRAR_PAR
 
-%type <expr> expresion
+%type <expr> expresion operacion_aritm operacion_aritm_base operacion_aritm_prec1 operacion_aritm_prec2
 
 %%
 
 
 lista_sentencias : sentencia | lista_sentencias sentencia;
 
-sentencia: expresion_aritm | expresion_bool | asignacion;
+sentencia: expresion FIN_SENTENCIA | asignacion FIN_SENTENCIA | asignacion | expresion;
 
 asignacion : ID ASSIGN expresion { $1.value = $3;
 				  sym_enter($1.nom, &$1.value);
-				  fprintf(yyout,"ID: %s es %s\n",$1.nom, varToString($1.value));
-}
+				  fprintf(yyout,"ID: %s es %s\n",$1.nom, varToString($1.value));}
 ;
 
-expresion: INTEGER { $$.tipo=entero; $$.valor.entero=$1;} |
+expresion: operacion_aritm | expresion_bool;
+
+operacion_aritm: operacion_aritm_prec1 | 
+		operacion_aritm SUM operacion_aritm_prec2 |
+		operacion_aritm REST operacion_aritm_prec2 |
+		SUM operacion_aritm_prec2 |			
+		REST operacion_aritm_prec2
+;
+
+
+operacion_aritm_prec1: 	operacion_aritm_prec2 | 
+			operacion_aritm_prec1 MUL operacion_aritm_prec2 |
+			operacion_aritm_prec1 DIV operacion_aritm_prec2 |
+			operacion_aritm_prec1 MOD operacion_aritm_prec2
+;
+
+operacion_aritm_prec2: operacion_aritm_base | operacion_aritm_prec2 POTENCIA operacion_aritm_base;
+
+
+operacion_aritm_base: ABRIR_PAR operacion_aritm CERRAR_PAR { $$=$2;} |
+	   INTEGER { $$.tipo=entero; $$.valor.entero=$1;} |
 	   REAL { $$.tipo=real; $$.valor.real=$1;} |
 	   CADENA { $$.tipo=cadena; $$.valor.cadena=$1;} |
-	   BOOLEAN { $$.tipo=boolean; $$.valor.boolean=$1;}
+	   BOOLEAN { $$.tipo=boolean; $$.valor.boolean=$1;} |
+	   ID { sym_lookup($1.nom, &$1.value); $$.tipo=$1.value.tipo; $$.valor=$1.value.valor;}
 ;
 
-expresion_aritm: SUMA;
 
-expresion_bool: BOOLEAN;
+expresion_bool: {};
 
 
 %%
