@@ -16,7 +16,7 @@ BIN = calc
 LFLAGS = -n -o $*.c 
 YFLAGS = -d -v -o $*.c
 CFLAGS = -ansi -Wall -g
-OTHERS = calc.tab.h calc.tab.output
+OTHERS = calc.tab.h calc.output
 
 ######################################################################
 

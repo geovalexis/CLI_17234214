@@ -10,14 +10,39 @@
 extern FILE *yyout;
 extern int yylineno;
 extern int yylex();
-extern void yyerror(char*);
+extern void yyerror(const char * s);
+
+
 %}
 
- /*DECLARATIONS*/
+
+
+%union{
+	struct{
+		char *lexema;
+		int lenght;
+		int line;
+	}ident;
+	int enter;
+	float real;
+	char caracter;
+	char * string;
+}
+
+%token <enter> INTEGER
+%token <ident> ID
+%token <real> REAL
+%token ASSIGN POTENCIA MAYOR_QUE MENOR_QUE MAYOR_IGUAL_QUE MENOR_IGUAL_QUE IGUAL_QUE DIFF_DE BOOL_TRUE BOOL_FALSE SUMA RESTA MULTIPLICACION DIVISION MODULO AND NEG OR CADENA
+
+
 
 %%
 
- /*RULES*/
+lista_sentencias : expressio | lista_sentencias expressio;
+
+expressio : ID ASSIGN INTEGER {
+				fprintf(yyout,"ID: %s pren per valor: %d\n",$<ident>1.lexema, $<enter>3);
+				}
 
 %%
 
@@ -67,6 +92,6 @@ return error;
 
 }
 
-void yyerror(char *explanation){
+void yyerror(const char *explanation){
 fprintf(stderr,"Error: %s ,in line %d \n",explanation,yylineno);
 }

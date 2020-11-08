@@ -1,0 +1,2 @@
+ID: x pren per valor: 7
+ID: y pren per valor: 8
