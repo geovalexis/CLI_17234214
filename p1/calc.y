@@ -12,27 +12,31 @@ extern int yylineno;
 extern int yylex();
 extern void yyerror(const char * s);
 
-
 %}
-
 
 
 %union{
 	struct{
-		char *lexema;
-		int lenght;
-		int line;
-	}ident;
-	int enter;
+		char *nom;		
+		void *value;
+		enum tipus{
+			entero, 
+			real, 
+			cadena, 
+			boolean}tipo;
+	}variable;
+	int entero;
 	float real;
-	char caracter;
-	char * string;
+	char *str;
+	bool boolean;
 }
 
-%token <enter> INTEGER
-%token <ident> ID
-%token <real> REAL
-%token ASSIGN POTENCIA MAYOR_QUE MENOR_QUE MAYOR_IGUAL_QUE MENOR_IGUAL_QUE IGUAL_QUE DIFF_DE BOOL_TRUE BOOL_FALSE SUMA RESTA MULTIPLICACION DIVISION MODULO AND NEG OR CADENA
+%token <variable> ID
+%token <entero> INTEGER 
+%token <float> REAL 
+%token <str> CADENA 
+%token <boolean> BOOLEAN
+%token ASSIGN POTENCIA MAYOR_QUE MENOR_QUE MAYOR_IGUAL_QUE MENOR_IGUAL_QUE IGUAL_QUE DIFF_DE BOOL_TRUE BOOL_FALSE SUMA RESTA MULTIPLICACION DIVISION MODULO AND NEG OR
 
 
 
@@ -41,7 +45,7 @@ extern void yyerror(const char * s);
 lista_sentencias : expressio | lista_sentencias expressio;
 
 expressio : ID ASSIGN INTEGER {
-				fprintf(yyout,"ID: %s pren per valor: %d\n",$<ident>1.lexema, $<enter>3);
+				fprintf(yyout,"ID: %s pren per valor: %d\n",$<variable>1.nom, $3);
 				}
 
 %%

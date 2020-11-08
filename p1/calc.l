@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdbool.h>
 #include "calc.tab.h"
 
 extern FILE *yyin;
@@ -35,12 +36,14 @@ asignacion ":="
 
 {asignacion}	{return ASSIGN;}
 
-"-"?{digit}({digit})* 	{yylval.enter=atoi(yytext);return INTEGER;}
+"-"?{digit}({digit})* 	{yylval.entero = atoi(yytext);
+			return INTEGER;}
 
-"-"?{digit}+"."{digit}+((?i:e)"-"?{digit}*)? 	{yylval.real=atof(yytext);return REAL;}
+"-"?{digit}+"."{digit}+((?i:e)"-"?{digit}*)? 	{yylval.real = atof(yytext);
+						return REAL;}
 
-{ini_fin_cadena}.*{ini_fin_cadena} 	{yylval.string = (char *)malloc(sizeof(char)*yyleng);
-					 strncpy(yylval.ident.lexema,yytext,yyleng);
+{ini_fin_cadena}.*{ini_fin_cadena} 	{yylval.str = (char *)malloc(sizeof(char)*yyleng);
+					 strncpy(yylval.str,yytext,yyleng);
 					 return CADENA;}			
 {suma} {return SUMA;}
 
@@ -69,14 +72,14 @@ asignacion ":="
 "or"  {return OR;}
 
  /* booleanos */
-"true" 	{return BOOL_TRUE;}
-"false" {return BOOL_FALSE;}
+"true" 	{yylval.boolean = true;
+	return BOOLEAN;}
+"false" {yylval.boolean = false;
+	return BOOLEAN;}
 
  /* importante que esta ultima definicion esté a lo último por si hay alguna coincidencia con palabras reservadas */
-{letra}({letra}|{digit})*    {yylval.ident.lexema = (char *)malloc(sizeof(char)*yyleng);
-				strncpy(yylval.ident.lexema,yytext,yyleng);
-				yylval.ident.lenght = yyleng;
-				yylval.ident.line = yylineno;
+{letra}({letra}|{digit})*    {yylval.variable.nom = (char *)malloc(sizeof(char)*yyleng);
+				strncpy(yylval.variable.nom,yytext,yyleng);
 				return ID;}	
 
 
