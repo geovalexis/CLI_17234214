@@ -2,7 +2,6 @@
 > **AUTOR**: Geovanny Risco <br/>
 > **GRADO**: Doble Grado de Ingenería Informática y Biotecnología
 ## Requerimientos previos
-Las versiones de los programas utilizados para la realizacion de éste proyecto son:
 La siguiente práctica se ha realizado utilizando la imagen milax-debian v20200214 bajo el motor de virtualización de VirtualBox v6.1. De esta imagen se utilizaron las siguientes utilidades:
 * flex v2.6.4
 * bison v3.3.2
