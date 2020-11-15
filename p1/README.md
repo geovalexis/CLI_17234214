@@ -21,7 +21,7 @@ A parte de éstos ficheros principales también existen otros que, aunque menos 
 ### Análisis léxico:
 Creo que el código del flex es bastante claro por sí mismo. Los únicos detalles raras quizás que me gustaría aclarar son los siguientes:
 * Considero que un símbolo ```-``` significa resta solo si no esta seguido de un número, ya que en este caso creo que es más acertado tratarlo como un número negativo en vez de como símbolo de resta.
-* Devuelvo un token ```FIN DE SENTENCIA``` tanto en caso de que sea un salto de línea (```\n```) como un comentario. Ésto lo hago para que bison pueda saltarse los comentarios igual que cuando le llega un fin de sentencia despues de una expresión.
+* Devuelvo un token ```FIN DE SENTENCIA``` tanto en caso de que sea un salto de línea (```\n```) dado que es el token que nos indique cuando acaba una sentencia. Además, es posiblen que hayan líneas vacías entre medio y por tanto esto lo tengo en cuenta en el campo de sentencias de Bison.
 ### Tabla de símbolos:
 En el header he adaptado el tipo del ```sym_value_type``` a las necesidades de mi programa, tengo una structura del tipo union que contiene los 4 tipos de variables especificadas por el enunciado asi como un enumerado que me guarda el tipo correspondiente (gracias a esto puedo saber qué tipo de variable se está utilizando).
 ### Análisis sintáctico:
@@ -48,5 +48,5 @@ make clean
 A modo de juego de pruebas tengo dos archivos llamados ```input1.txt``` y ```input2.txt```, cuya ejecución con la versión actual de programa debería de producir los resultados espeficados en ```output1.txt``` y ```output2.txt``` respectivamente. El ```input2.txt``` es el correspondiente al enunciado de la práctica aunque incompleto, solo están incluidas las partes que funcionan correctamente.
 ## Limitaciones (TODOs)
 * Falta implementación de la parte de expresiones booleanas.
-* Más de 30 conflictos shift/reduce, la mayoría producidos por la sentencia inicial. 
+* Hay 6 conflictos shift/reduce que habría que mirar con detenimiento.
 * Hay muchos potenciales errores de cálculo que no estan contemplados.
