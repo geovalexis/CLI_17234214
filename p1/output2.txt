@@ -6,7 +6,5 @@ EXPRESION: expresion que contiene un real con valor 1.500
 EXPRESION: expresion que contiene un entero con valor 5
 EXPRESION: expresion que contiene un real con valor 31.250
 EXPRESION: expresion que contiene una cadena con valor "Hola"
-EXPRESION: expresion que contiene un entero con valor 0
-ereinEXPRESION: expresion que contiene un entero con valor 15
-EXPRESION: expresion que contiene un entero con valor 5
-EXPRESION: expresion que contiene un real con valor 1.500
+EXPRESION: expresion que contiene un real con valor -6.500
+EXPRESION: expresion que contiene un entero con valor 15

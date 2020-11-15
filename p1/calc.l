@@ -49,11 +49,11 @@ cerrar_par ")"
 					 return CADENA;}			
 {suma} {return SUM;}
 
-{resta}[^/{digit}] {return REST;}
+{resta} {return REST;}
 
 {mult}[^/{mult}] {return MUL;}
 
-{pot} {return POTENCIA;}
+{pot}/{digit} {return POTENCIA;}
 
 {div}[^/*] {return DIV;}
 
@@ -88,13 +88,12 @@ cerrar_par ")"
 				return ID;}	
 
 
-{comentario_linea}+(.)*  {return FIN_SENTENCIA;}
+{comentario_linea}(.)*{linebreak}  {}
 
-{comentario_bloque_abrir} {BEGIN(comment); return FIN_SENTENCIA;} 	/* activar condición */
-<comment>[^*{linebreak}]*  {}	/* eat anything that's not a '*'  */
-<comment>"*"+[^*/{linebreak}]* {}	/* eat up '*' not followed by '/'s  */ 
-<comment>{linebreak}  {}
-<comment>{comentario_bloque_cerrar} {BEGIN(INITIAL);} 	/* restaurar estado del sistema */
+{comentario_bloque_abrir} {BEGIN(comment);} 	/* activar condición */
+<comment>[^*]*  {}	/* eat anything that's not a '*'  */
+<comment>"*"+[^*/]* {}	/* eat up '*' not followed by '/'s  */ 
+<comment>{comentario_bloque_cerrar}{linebreak}? {BEGIN(INITIAL);} 	/* restaurar estado del sistema */
 
 {linebreak} {} {return FIN_SENTENCIA;}/* eat up linebreaks */
 

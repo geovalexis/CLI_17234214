@@ -47,9 +47,9 @@ void concatenarCadenas(sym_value_type s1, sym_value_type s2, char* buffer);
 %%
 
 
-lista_sentencias : sentencia | lista_sentencias sentencia;
+lista_sentencias : lista_sentencias sentencia | sentencia;
 
-sentencia: FIN_SENTENCIA | expresion FIN_SENTENCIA {printExpr($1);} | asignacion FIN_SENTENCIA | asignacion | expresion {printExpr($1);};
+sentencia:  FIN_SENTENCIA | expresion FIN_SENTENCIA {printExpr($1);} | asignacion FIN_SENTENCIA;
 
 asignacion : ID ASSIGN expresion { $1.value = $3;
 				  sym_enter($1.nom, &$1.value);
@@ -59,7 +59,7 @@ asignacion : ID ASSIGN expresion { $1.value = $3;
 expresion: expresion_aritmetica | expresion_bool;
 
 expresion_aritmetica: operacion_aritm_prec1 | 
-		operacion_aritm_prec1 SUM operacion_aritm_prec1 {
+		expresion_aritmetica SUM operacion_aritm_prec1 {
 		if ($1.tipo!=2 && $3.tipo!=2) {
 			if ($1.tipo==$3.tipo){
 				$$.tipo=$1.tipo;
@@ -81,7 +81,7 @@ expresion_aritmetica: operacion_aritm_prec1 |
 		}				
 
 }|
-		operacion_aritm_prec1 REST operacion_aritm_prec1 {
+		expresion_aritmetica REST operacion_aritm_prec1 {
 		if ($1.tipo==$3.tipo){
 			$$.tipo=$1.tipo;
 			if ($1.tipo==0) $$.valor.entero=$1.valor.entero - $3.valor.entero;
@@ -96,8 +96,12 @@ expresion_aritmetica: operacion_aritm_prec1 |
 		}
 		else $$.tipo=-1;
 }|
-		SUM operacion_aritm_prec1 {$$=$2;}|			
-		REST operacion_aritm_prec1 {$$=$2;}
+		SUM expresion_aritmetica {$$=$2;}|			
+		REST expresion_aritmetica {
+		$$.tipo = $2.tipo;
+		if ($2.tipo==0) $$.valor.entero = $2.valor.entero * (-1);
+		else $$.valor.real = $2.valor.real * (-1);
+}
 ;
 
 
