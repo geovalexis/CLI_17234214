@@ -42,7 +42,7 @@ void concatenarCadenas(sym_value_type s1, sym_value_type s2, char* buffer);
 %token <boolean> BOOLEAN
 %token ASSIGN POTENCIA GT LT GE LE EQ NE BOOL_TRUE BOOL_FALSE SUM REST MUL DIV MOD AND NEG OR FIN_SENTENCIA ABRIR_PAR CERRAR_PAR
 
-%type <expr> expresion expresion_aritmetica expresion_bool operacion_aritm_base operacion_aritm_prec1 operacion_aritm_prec2
+%type <expr> expresion expresion_aritmetica  operacion_aritm_base operacion_aritm_prec1 operacion_aritm_prec2 expresion_bool operacion_boolean_con_aritm operacion_boolean_prec1 operacion_boolean_prec2 operacion_boolean_base
 
 %type <variable> id
 
@@ -177,13 +177,82 @@ operacion_aritm_base: ABRIR_PAR expresion_aritmetica CERRAR_PAR { $$=$2;} |
 	   INTEGER { $$.tipo=entero; $$.valor.entero=$1;}|
 	   REAL { $$.tipo=real; $$.valor.real=$1;} |
 	   CADENA { $$.tipo=cadena; $$.valor.cadena=$1;} |
-	   BOOLEAN { $$.tipo=boolean; $$.valor.boolean=$1;} |
 	   ID_ARITM { sym_lookup($1.nom, &$1.value); $$.tipo=$1.value.tipo; $$.valor=$1.value.valor;}
 ;
 
 
-expresion_bool: {};
+expresion_bool: operacion_boolean_prec1 | 
+		expresion_bool OR operacion_boolean_prec1 {
+		$$.tipo=3;
+		$$.valor.boolean = $1.valor.boolean || $3.valor.boolean;
+}; 
 
+operacion_boolean_prec1: operacion_boolean_prec2 |
+		operacion_boolean_prec1 AND operacion_boolean_prec2 {
+		$$.tipo=3;
+		$$.valor.boolean = $1.valor.boolean && $3.valor.boolean;
+}; 
+
+operacion_boolean_prec2: operacion_boolean_base | 
+		NEG operacion_boolean_prec2 {
+		$$.tipo=3;
+		$$.valor.boolean = !($2.valor.boolean);
+}; 
+
+operacion_boolean_base: ABRIR_PAR expresion_bool CERRAR_PAR { $$=$2;} | operacion_boolean_con_aritm |
+	   BOOLEAN { $$.tipo=boolean; $$.valor.boolean=$1;} |
+	   ID_BOOL { sym_lookup($1.nom, &$1.value); $$.tipo=$1.value.tipo; $$.valor=$1.value.valor;}
+;
+
+
+operacion_boolean_con_aritm: expresion_aritmetica GT expresion_aritmetica {
+		$$.tipo = 3;		
+		if (($1.tipo==0) && ($3.tipo==0)) $$.valor.boolean = $1.valor.entero > $3.valor.entero;
+		else if (($1.tipo==1) && ($3.tipo==1)) $$.valor.boolean = $1.valor.real > $3.valor.real;
+		else if (($1.tipo==0) && ($3.tipo==1)) $$.valor.boolean = $1.valor.entero > $3.valor.real;
+		else if (($1.tipo==1) && ($3.tipo==0)) $$.valor.boolean = $1.valor.real > $3.valor.entero;
+		else yyerror("Solo se puede realizar operaciones booleanas sobre enteros y reales"); 
+}|
+		expresion_aritmetica LT expresion_aritmetica {		
+		$$.tipo = 3;		
+		if (($1.tipo==0) && ($3.tipo==0)) $$.valor.boolean = $1.valor.entero < $3.valor.entero;
+		else if (($1.tipo==1) && ($3.tipo==1)) $$.valor.boolean = $1.valor.real < $3.valor.real;
+		else if (($1.tipo==0) && ($3.tipo==1)) $$.valor.boolean = $1.valor.entero < $3.valor.real;
+		else if (($1.tipo==1) && ($3.tipo==0)) $$.valor.boolean = $1.valor.real < $3.valor.entero;
+		else yyerror("Solo se puede realizar operaciones booleanas sobre enteros y reales"); 
+}|
+		expresion_aritmetica GE expresion_aritmetica {		
+		$$.tipo = 3;
+		if (($1.tipo==0) && ($3.tipo==0))$$.valor.boolean = ($1.valor.entero > $3.valor.entero ) || ($1.valor.entero == $3.valor.entero );
+		else if (($1.tipo==1) && ($3.tipo==1)) $$.valor.boolean = ($1.valor.real > $3.valor.real) || ($1.valor.real == $3.valor.real);
+		else if (($1.tipo==0) && ($3.tipo==1)) $$.valor.boolean = ($1.valor.entero > $3.valor.real ) || ($1.valor.entero == $3.valor.real );
+		else if (($1.tipo==1) && ($3.tipo==0)) $$.valor.boolean = ($1.valor.entero > $3.valor.real) || ($1.valor.entero == $3.valor.real);
+		else yyerror("Solo se puede realizar operaciones booleanas sobre enteros o reales"); 
+}|
+		expresion_aritmetica LE expresion_aritmetica {		
+		$$.tipo = 3;
+		if (($1.tipo==0) && ($3.tipo==0))$$.valor.boolean = ($1.valor.entero < $3.valor.entero ) || ($1.valor.entero == $3.valor.entero );
+		else if (($1.tipo==1) && ($3.tipo==1)) $$.valor.boolean = ($1.valor.real < $3.valor.real) || ($1.valor.real == $3.valor.real);
+		else if (($1.tipo==0) && ($3.tipo==1)) $$.valor.boolean = ($1.valor.entero < $3.valor.real ) || ($1.valor.entero == $3.valor.real );
+		else if (($1.tipo==1) && ($3.tipo==0)) $$.valor.boolean = ($1.valor.entero < $3.valor.real) || ($1.valor.entero == $3.valor.real);
+		else yyerror("Solo se puede realizar operaciones booleanas sobre enteros o reales"); 
+}|
+		expresion_aritmetica EQ expresion_aritmetica {		
+		$$.tipo = 3;		
+		if (($1.tipo==0) && ($3.tipo==0)) $$.valor.boolean = $1.valor.entero == $3.valor.entero;
+		else if (($1.tipo==1) && ($3.tipo==1)) $$.valor.boolean = $1.valor.real == $3.valor.real;
+		else if (($1.tipo==0) && ($3.tipo==1)) $$.valor.boolean = $1.valor.entero == $3.valor.real;
+		else if (($1.tipo==1) && ($3.tipo==0)) $$.valor.boolean = $1.valor.real == $3.valor.entero;
+		else yyerror("Solo se puede realizar operaciones booleanas sobre enteros y reales"); 
+}|
+		expresion_aritmetica NE expresion_aritmetica {		
+		$$.tipo = 3;		
+		if (($1.tipo==0) && ($3.tipo==0)) $$.valor.boolean = $1.valor.entero != $3.valor.entero;
+		else if (($1.tipo==1) && ($3.tipo==1)) $$.valor.boolean = $1.valor.real != $3.valor.real;
+		else if (($1.tipo==0) && ($3.tipo==1)) $$.valor.boolean = $1.valor.entero != $3.valor.real;
+		else if (($1.tipo==1) && ($3.tipo==0)) $$.valor.boolean = $1.valor.real != $3.valor.entero;
+		else yyerror("Solo se puede realizar operaciones booleanas sobre enteros y reales"); 
+};
 
 %%
 
@@ -209,6 +278,7 @@ void printExpr(sym_value_type expr){
 
 void concatenarCadenas(sym_value_type s1, sym_value_type s2, char* buffer){
 	buffer = malloc(sizeof(char)*512); /*Podrá contener ints o reales*/	
+
 	if ((s1.tipo==2) && (s2.tipo==2)){
 		snprintf(buffer, sizeof buffer, "%s%s", s1, s2);
 	}
