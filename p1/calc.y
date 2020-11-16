@@ -100,8 +100,8 @@ expresion_aritmetica: operacion_aritm_prec1 |
 		}
 		else $$.tipo=-1;
 }|
-		SUM expresion_aritmetica {$$=$2;}|			
-		REST expresion_aritmetica {
+		SUM operacion_aritm_prec1 {$$=$2;}|			
+		REST operacion_aritm_prec1 {
 		$$.tipo = $2.tipo;
 		if ($2.tipo==0) $$.valor.entero = $2.valor.entero * (-1);
 		else $$.valor.real = $2.valor.real * (-1);
