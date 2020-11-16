@@ -83,9 +83,13 @@ cerrar_par ")"
 	return BOOLEAN;}
 
  /* importante que esta ultima definicion esté a lo último por si hay alguna coincidencia con palabras reservadas */
-{letra}({letra}|{digit})*    {yylval.variable.nom = (char *)malloc(sizeof(char)*yyleng);
+{letra}({letra}|{digit})*    {  sym_value_type value;
+				yylval.variable.nom = (char *)malloc(sizeof(char)*yyleng);
 				strncpy(yylval.variable.nom,yytext,yyleng);
-				return ID;}	
+				if (sym_lookup(yytext, &value) == SYMTAB_OK) {
+					if (value.tipo==3) return ID_BOOL;
+					else return ID_ARITM;
+				} else return ID_ARITM;}	
 
 
 {comentario_linea}(.)*{linebreak}  {}

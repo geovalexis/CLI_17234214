@@ -35,7 +35,7 @@ void concatenarCadenas(sym_value_type s1, sym_value_type s2, char* buffer);
 	bool boolean;
 }
 
-%token <variable> ID
+%token <variable> ID_ARITM ID_BOOL
 %token <entero> INTEGER 
 %token <real> REAL 
 %token <str> CADENA
@@ -44,6 +44,8 @@ void concatenarCadenas(sym_value_type s1, sym_value_type s2, char* buffer);
 
 %type <expr> expresion expresion_aritmetica expresion_bool operacion_aritm_base operacion_aritm_prec1 operacion_aritm_prec2
 
+%type <variable> id
+
 %%
 
 
@@ -51,10 +53,12 @@ lista_sentencias : lista_sentencias sentencia | sentencia;
 
 sentencia:  FIN_SENTENCIA | expresion FIN_SENTENCIA {printExpr($1);} | asignacion FIN_SENTENCIA;
 
-asignacion : ID ASSIGN expresion { $1.value = $3;
+asignacion : id ASSIGN expresion { $1.value = $3;
 				  sym_enter($1.nom, &$1.value);
 				  fprintf(yyout,"ID: %s es %s\n",$1.nom, varToString($1.value));}
 ;
+
+id: ID_BOOL | ID_ARITM;
 
 expresion: expresion_aritmetica | expresion_bool;
 
@@ -174,7 +178,7 @@ operacion_aritm_base: ABRIR_PAR expresion_aritmetica CERRAR_PAR { $$=$2;} |
 	   REAL { $$.tipo=real; $$.valor.real=$1;} |
 	   CADENA { $$.tipo=cadena; $$.valor.cadena=$1;} |
 	   BOOLEAN { $$.tipo=boolean; $$.valor.boolean=$1;} |
-	   ID { sym_lookup($1.nom, &$1.value); $$.tipo=$1.value.tipo; $$.valor=$1.value.valor;}
+	   ID_ARITM { sym_lookup($1.nom, &$1.value); $$.tipo=$1.value.tipo; $$.valor=$1.value.valor;}
 ;
 
 
