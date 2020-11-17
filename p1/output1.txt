@@ -1,5 +1,5 @@
 ID: x es un entero con valor 7
 ID: y es un real con valor 3.400
-ID: j es una cadena con valor "hi"
+ID: j es una cadena con valor "hola"
 ID: p es un booleano con valor true
 ID: b es un entero con valor 7

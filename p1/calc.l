@@ -5,14 +5,18 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdbool.h>
+#include <string.h>
 #include "calc.tab.h"
+#define YYLMAX 100
 
 extern FILE *yyin;
+char *string_buffer;
 
 %}
 
 %option yylineno
 %x comment
+%x cadena
 
 digit [0-9]
 letra [a-zA-Z]
@@ -21,7 +25,6 @@ espacio [ \t\r]
 comentario_linea "//"
 comentario_bloque_abrir "/*"
 comentario_bloque_cerrar "*/"
-ini_fin_cadena \"
 
 suma "+"
 resta "-"
@@ -43,10 +46,7 @@ cerrar_par ")"
 
 "-"?{digit}+"."{digit}+((?i:e)"-"?{digit}*)? 	{yylval.real = atof(yytext);
 						return REAL;}
-
-{ini_fin_cadena}.*{ini_fin_cadena} 	{yylval.str = (char *)malloc(sizeof(char)*yyleng);
-					 strncpy(yylval.str,yytext,yyleng);
-					 return CADENA;}			
+			
 {suma} {return SUM;}
 
 {resta} {return REST;}
@@ -80,24 +80,30 @@ cerrar_par ")"
 "true" 	{yylval.boolean = true;
 	return BOOLEAN;}
 "false" {yylval.boolean = false;
-	return BOOLEAN;}
+	return BOOLEAN;}	
 
- /* importante que esta ultima definicion esté a lo último por si hay alguna coincidencia con palabras reservadas */
-{letra}({letra}|{digit})*    {  sym_value_type value;
-				yylval.variable.nom = (char *)malloc(sizeof(char)*yyleng);
-				strncpy(yylval.variable.nom,yytext,yyleng);
-				if (sym_lookup(yytext, &value) == SYMTAB_OK) {
-					if (value.tipo==3) return ID_BOOL;
-					else return ID_ARITM;
-				} else return ID_ARITM;}	
-
-
+ /* COMENTARIOS */
 {comentario_linea}(.)*{linebreak}  {}
-
 {comentario_bloque_abrir} {BEGIN(comment);} 	/* activar condición */
 <comment>[^*]*  {}	/* eat anything that's not a '*'  */
 <comment>"*"+[^*/]* {}	/* eat up '*' not followed by '/'s  */ 
 <comment>{comentario_bloque_cerrar}{linebreak}? {BEGIN(INITIAL);} 	/* restaurar estado del sistema */
+
+ /* CADENAS DE TEXTO */
+
+\"[^\n\"]+\"		{yylval.str = (char *)malloc(sizeof(char)*yyleng);
+					 strncpy(yylval.str,yytext,yyleng);
+					 return CADENA;}
+
+ /* IDENTIFICADORES. Importante que esta ultima definicion esté a lo último por si hay alguna coincidencia con palabras reservadas */
+{letra}({letra}|{digit})*    {  sym_value_type value;
+				yylval.variable.nom = (char *)malloc(sizeof(char)*yyleng);
+				strncpy(yylval.variable.nom,yytext,yyleng);
+				if (sym_lookup(yytext, &value) == SYMTAB_OK) {
+					if (value.tipo==boolean) return ID_BOOL;
+					else return ID_ARITM;
+				} else return ID;}
+
 
 {linebreak} {} {return FIN_SENTENCIA;}/* eat up linebreaks */
 

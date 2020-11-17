@@ -8,6 +8,7 @@ EXPRESION: expresion que contiene un entero con valor 5
 EXPRESION: expresion que contiene un real con valor 31.250
 EXPRESION: expresion que contiene una cadena con valor "Hola"
 EXPRESION: expresion que contiene un booleano con valor true
-EXPRESION: expresion que contiene un real con valor -3.500
 EXPRESION: expresion que contiene un entero con valor 15
+EXPRESION: expresion que contiene un real con valor -3.500
+EXPRESION: expresion que contiene una cadena con valor "HolHola5--1.500"
 EXPRESION: expresion que contiene un booleano con valor true

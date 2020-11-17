@@ -1,5 +1,5 @@
 x := 7
 y := 3.4
-j := "hi"
+j := "ho" + "la"
 p := true
 b := x

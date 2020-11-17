@@ -2,7 +2,7 @@
 x := 1.5
 i := 5
 z := i * (x + i) - i / 4.0
-s := "Hola" 
+s := "Ho" + "la" 
 b := z > 3 or not (i > 0 and i <= 10) or false
 
 // expressions bàsiques
@@ -15,8 +15,9 @@ b
 /*
 * expressions
 */
--i + x
 i + i * 2
+-i + x
+s + (s + i) + "--" + x
 b or not b
 
 
