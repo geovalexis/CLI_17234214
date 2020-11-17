@@ -20,13 +20,13 @@ A parte de éstos ficheros principales también existen otros que, aunque menos 
 ## Decisiones de diseño
 ### Análisis léxico:
 Creo que el código del flex es bastante claro por sí mismo. Los únicos detalles raras quizás que me gustaría aclarar son los siguientes:
-* Considero que un símbolo ```-``` significa resta solo si no esta seguido de un número, ya que en este caso creo que es más acertado tratarlo como un número negativo en vez de como símbolo de resta.
-* Devuelvo un token ```FIN DE SENTENCIA``` tanto en caso de que sea un salto de línea (```\n```) dado que es el token que nos indique cuando acaba una sentencia. Además, es posiblen que hayan líneas vacías entre medio y por tanto esto lo tengo en cuenta en el campo de sentencias de Bison.
+* Devuelvo un token ```FIN DE SENTENCIA``` para identificar correctamente cuando acaba una sentencia y tambien poder saltarme las lineas en blanco y comentarios.
+* Devuelvo 3 tipos de identificadores: ID, ID_ARITM y ID_BOOL. Cuando un identificador no está en la tabla de símbolos (nuevo identificador) devuelvo ID y sino, obtengo el tipo que es y devuelvo ID_BOOL en caso de que sea un booleano y ID_ARITM en caso contrario.
 ### Tabla de símbolos:
 En el header he adaptado el tipo del ```sym_value_type``` a las necesidades de mi programa, tengo una structura del tipo union que contiene los 4 tipos de variables especificadas por el enunciado asi como un enumerado que me guarda el tipo correspondiente (gracias a esto puedo saber qué tipo de variable se está utilizando).
 ### Análisis sintáctico:
-En este caso puede que el código no sea tan legible como en el flex, y esto es porque las acciones para cada gramática me ocupan un buen trozo de código. No obstante la mayor parte de éste código es bastante repetitivo y se encarga principalmente de comprobar el tipo y realizar las operaciones correspondientes respetando las reglas matemáticas y especificaciones del enunciado. No encapsulé todas éstas acciones en una función porque me dí cuenta de que cada operación tenía sus excepciones y al final ésto me dificultaría la implementación más que ayudarme (e igualmente tendría que tratar cada operación matemática por separado). <br/>
-***NOTA***: Todo lo que concierne al análisis sintáctico de operaciones booleanas no esta implementado porque no encontré la forma de ligarlo con las operaciones aritméticas sin desmontar toda la estructura que tenía hasta ahora, asi que decidí saltarméla y mejorar lo que tenía. No me daba tiempo a rehacer el esquema que había pensado hasta ese momento porque fui con el tiempo justo, para la próxima práctica me intentaré organizar mejor. 
+En este caso puede que el código no sea tan legible como en el flex, y esto es porque las acciones para cada gramática me ocupan un buen trozo de código. No obstante la mayor parte de éste código es bastante repetitivo y se encarga principalmente de comprobar el tipo y realizar las operaciones correspondientes respetando las reglas matemáticas y especificaciones del enunciado. No encapsulé todas éstas acciones en una función porque me dí cuenta de que cada operación tenía sus excepciones y al final ésto me dificultaría la implementación más que ayudarme (e igualmente tendría que tratar cada operación matemática por separado). 
+En cuando al concatenación de los argumentos me gustaría destacar que me dio muchos problemas y todavía es propenso a bugs. Utilizo una [estrategia](https://stackoverflow.com/questions/29087129/how-to-calculate-the-length-of-output-that-sprintf-will-generate#:~:text=call.&text=You%20can%20call%20int%20len,counting%20the%20terminating%20'%5C0'%20) un tanto rebuscada para obtener el tamaño del buffer ya que de aquí me provenían la mayor parte de los problemas, pero bueno, supongo que esto son cosas de C. (<br/>
 ## Ejecución
 ### 1. Compilacion
 Para la compilación del programa es necesario ejecutar los siguientes comandos:
@@ -45,8 +45,7 @@ En caso de que queramos limpiar todos los archivos resultantes de la compilació
 make clean
 ```
 ## Resultados
-A modo de juego de pruebas tengo dos archivos llamados ```input1.txt``` y ```input2.txt```, cuya ejecución con la versión actual de programa debería de producir los resultados espeficados en ```output1.txt``` y ```output2.txt``` respectivamente. El ```input2.txt``` es el correspondiente al enunciado de la práctica aunque incompleto, solo están incluidas las partes que funcionan correctamente.
+A modo de juego de pruebas tengo dos archivos llamados ```input1.txt``` y ```input2.txt```, cuya ejecución con la versión actual de programa debería de producir los resultados espeficados en ```output1.txt``` y ```output2.txt``` respectivamente. El ```input2.txt``` es el correspondiente al enunciado de la práctica aunque con la penúltima sentencia ligeramente modificada (he quitado el identificado b ya que es un booleano y daría sintax error, no se si está a posta o sin querer) para obtener un output correcto. En este mismo output verás que el primer "hola" no esta del todo correcto, le falta la "a" y no he podido solucionarlo, estuve un buen rato buscando el error y solo llegue a identificar que se trata de algo de tamaño del buffer porque si printeo las expresiones justo antes de realizar el snprintf ambas variables están completas. 
 ## Limitaciones (TODOs)
-* Falta implementación de la parte de expresiones booleanas.
-* Hay 6 conflictos shift/reduce que habría que mirar con detenimiento.
-* Hay muchos potenciales errores de cálculo que no estan contemplados.
+* Potenciales errores de cálculo que no estan contemplados.
+* Se podrían mostrar mas posibles errores.
