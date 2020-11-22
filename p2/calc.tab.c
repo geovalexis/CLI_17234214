@@ -166,7 +166,7 @@ union YYSTYPE
 		sym_value_type value;
 	}variable;
 	sym_value_type expr;
-	char* entero, real;
+	char *entero, *real;
 
 #line 172 "calc.tab.c" /* yacc.c:352  */
 };

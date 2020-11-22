@@ -1,6 +1,5 @@
 // expressions
-// x := 5.0 // NO FUNCIONA
-x := 5
+x := 5.0
 i := 3
-y := i + i * 3
+y := i + i * 3 - x
 

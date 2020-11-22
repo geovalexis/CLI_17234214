@@ -32,7 +32,7 @@ void emet_calculation(sym_value_type *s0, sym_value_type s1, sym_value_type s2, 
 		sym_value_type value;
 	}variable;
 	sym_value_type expr;
-	char* entero, real;
+	char *entero, *real;
 }
 
 %token <variable> ID ID_ARITM ID_BOOL
