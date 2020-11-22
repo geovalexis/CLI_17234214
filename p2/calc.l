@@ -41,10 +41,12 @@ cerrar_par ")"
 
 {asignacion}	{return ASSIGN;}
 
-"-"?{digit}({digit})* 	{yylval.entero = atoi(yytext);
+"-"?{digit}({digit})* 	{yylval.entero = (char *)malloc(sizeof(char)*yyleng);
+			strncpy(yylval.entero,yytext,yyleng);
 			return INTEGER;}
 
-"-"?{digit}+"."{digit}+((?i:e)"-"?{digit}*)? 	{yylval.real = atof(yytext);
+"-"?{digit}+"."{digit}+((?i:e)"-"?{digit}*)? 	{yylval.real = (char *)malloc(sizeof(char)*yyleng);
+						strncpy(yylval.real,yytext,yyleng);
 						return REAL;}
 			
 {suma} {return SUM;}
@@ -77,8 +79,7 @@ cerrar_par ")"
 				yylval.variable.nom = (char *)malloc(sizeof(char)*yyleng);
 				strncpy(yylval.variable.nom,yytext,yyleng);
 				if (sym_lookup(yytext, &value) == SYMTAB_OK) {
-					if (value.tipo==boolean) return ID_BOOL;
-					else return ID_ARITM;
+					return ID_ARITM;
 				} else return ID;}
 
 

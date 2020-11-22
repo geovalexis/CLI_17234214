@@ -818,29 +818,31 @@ YY_RULE_SETUP
 case 2:
 YY_RULE_SETUP
 #line 44 "calc.l"
-{yylval.entero = atoi(yytext);
+{yylval.entero = (char *)malloc(sizeof(char)*yyleng);
+			strncpy(yylval.entero,yytext,yyleng);
 			return INTEGER;}
 	YY_BREAK
 case 3:
 YY_RULE_SETUP
-#line 47 "calc.l"
-{yylval.real = atof(yytext);
+#line 48 "calc.l"
+{yylval.real = (char *)malloc(sizeof(char)*yyleng);
+						strncpy(yylval.real,yytext,yyleng);
 						return REAL;}
 	YY_BREAK
 case 4:
 YY_RULE_SETUP
-#line 50 "calc.l"
+#line 52 "calc.l"
 {return SUM;}
 	YY_BREAK
 case 5:
 YY_RULE_SETUP
-#line 52 "calc.l"
+#line 54 "calc.l"
 {return REST;}
 	YY_BREAK
 case 6:
 /* rule 6 can match eol */
 YY_RULE_SETUP
-#line 54 "calc.l"
+#line 56 "calc.l"
 {return MUL;}
 	YY_BREAK
 case 7:
@@ -848,94 +850,93 @@ case 7:
 (yy_c_buf_p) = yy_cp = yy_bp + 2;
 YY_DO_BEFORE_ACTION; /* set up yytext again */
 YY_RULE_SETUP
-#line 56 "calc.l"
+#line 58 "calc.l"
 {return POTENCIA;}
 	YY_BREAK
 case 8:
 /* rule 8 can match eol */
 YY_RULE_SETUP
-#line 58 "calc.l"
+#line 60 "calc.l"
 {return DIV;}
 	YY_BREAK
 case 9:
 YY_RULE_SETUP
-#line 60 "calc.l"
+#line 62 "calc.l"
 {return MOD;}
 	YY_BREAK
 case 10:
 YY_RULE_SETUP
-#line 62 "calc.l"
+#line 64 "calc.l"
 {return ABRIR_PAR;}
 	YY_BREAK
 case 11:
 YY_RULE_SETUP
-#line 64 "calc.l"
+#line 66 "calc.l"
 {return CERRAR_PAR;}
 	YY_BREAK
 /* COMENTARIOS */
 case 12:
 /* rule 12 can match eol */
 YY_RULE_SETUP
-#line 68 "calc.l"
+#line 70 "calc.l"
 {}
 	YY_BREAK
 case 13:
 YY_RULE_SETUP
-#line 69 "calc.l"
+#line 71 "calc.l"
 {BEGIN(comment);} 	/* activar condición */
 	YY_BREAK
 case 14:
 /* rule 14 can match eol */
 YY_RULE_SETUP
-#line 70 "calc.l"
+#line 72 "calc.l"
 {}	/* eat anything that's not a '*'  */
 	YY_BREAK
 case 15:
 /* rule 15 can match eol */
 YY_RULE_SETUP
-#line 71 "calc.l"
+#line 73 "calc.l"
 {}	/* eat up '*' not followed by '/'s  */ 
 	YY_BREAK
 case 16:
 /* rule 16 can match eol */
 YY_RULE_SETUP
-#line 72 "calc.l"
+#line 74 "calc.l"
 {BEGIN(INITIAL);} 	/* restaurar estado del sistema */
 	YY_BREAK
 /* IDENTIFICADORES. Importante que esta ultima definicion esté a lo último por si hay alguna coincidencia con palabras reservadas */
 case 17:
 YY_RULE_SETUP
-#line 76 "calc.l"
+#line 78 "calc.l"
 {  sym_value_type value;
 				yylval.variable.nom = (char *)malloc(sizeof(char)*yyleng);
 				strncpy(yylval.variable.nom,yytext,yyleng);
 				if (sym_lookup(yytext, &value) == SYMTAB_OK) {
-					if (value.tipo==boolean) return ID_BOOL;
-					else return ID_ARITM;
+					return ID_ARITM;
 				} else return ID;}
 	YY_BREAK
 case 18:
 /* rule 18 can match eol */
 YY_RULE_SETUP
-#line 85 "calc.l"
+#line 86 "calc.l"
 {} {return FIN_SENTENCIA;}/* eat up linebreaks */
 	YY_BREAK
 case 19:
 YY_RULE_SETUP
-#line 87 "calc.l"
+#line 88 "calc.l"
 {} /* eat up whitespaces */
 	YY_BREAK
 case 20:
 YY_RULE_SETUP
-#line 89 "calc.l"
+#line 90 "calc.l"
 {printf( "Unrecognized character: %s\n", yytext );}
 	YY_BREAK
 case 21:
 YY_RULE_SETUP
-#line 92 "calc.l"
+#line 93 "calc.l"
 ECHO;
 	YY_BREAK
-#line 939 "calc.flex.c"
+#line 940 "calc.flex.c"
 case YY_STATE_EOF(INITIAL):
 case YY_STATE_EOF(comment):
 case YY_STATE_EOF(cadena):
@@ -1954,7 +1955,7 @@ void yyfree (void * ptr )
 
 #define YYTABLES_NAME "yytables"
 
-#line 92 "calc.l"
+#line 93 "calc.l"
 
 
 int init_analisi_lexic(char *file_name)

@@ -74,6 +74,7 @@
 #include <stdbool.h>
 #include <math.h>
 #include <string.h>
+#include <stdarg.h> 
 #include "calc.tab.h"
 #define YYLMAX 100
 
@@ -81,11 +82,14 @@ extern FILE *yyout;
 extern int yylineno;
 extern int yylex();
 extern void yyerror(const char * s);
-char* varToString(sym_value_type var);
-void printExpr(sym_value_type expr);
+int sq=1; /*siguiente squat (linea)*/
+void emet(int args_count, ...);
+int st=1; /*siguiente temporal*/
+char* nou_temporal();
+void emet_calculation(sym_value_type *s0, sym_value_type s1, sym_value_type s2, const char* oper);
 
 
-#line 89 "calc.tab.c" /* yacc.c:337  */
+#line 93 "calc.tab.c" /* yacc.c:337  */
 # ifndef YY_NULLPTR
 #  if defined __cplusplus
 #   if 201103L <= __cplusplus
@@ -118,11 +122,11 @@ void printExpr(sym_value_type expr);
 extern int yydebug;
 #endif
 /* "%code requires" blocks.  */
-#line 20 "calc.y" /* yacc.c:352  */
+#line 24 "calc.y" /* yacc.c:352  */
 
 	#include "symtab.h"
 
-#line 126 "calc.tab.c" /* yacc.c:352  */
+#line 130 "calc.tab.c" /* yacc.c:352  */
 
 /* Token type.  */
 #ifndef YYTOKENTYPE
@@ -155,18 +159,16 @@ extern int yydebug;
 
 union YYSTYPE
 {
-#line 25 "calc.y" /* yacc.c:352  */
+#line 29 "calc.y" /* yacc.c:352  */
 
 	struct{
 		char *nom;		
 		sym_value_type value;
 	}variable;
 	sym_value_type expr;
-	int entero;
-	float real;
-	char *str;
+	char* entero, real;
 
-#line 170 "calc.tab.c" /* yacc.c:352  */
+#line 172 "calc.tab.c" /* yacc.c:352  */
 };
 
 typedef union YYSTYPE YYSTYPE;
@@ -471,9 +473,9 @@ static const yytype_uint8 yytranslate[] =
   /* YYRLINE[YYN] -- Source line where rule number YYN was defined.  */
 static const yytype_uint8 yyrline[] =
 {
-       0,    46,    46,    46,    48,    50,    50,    52,    52,    52,
-      54,    60,    62,    63,    81,    96,    97,   105,   106,   121,
-     141,   150,   150,   169,   170,   171,   172
+       0,    48,    48,    48,    50,    52,    52,    54,    54,    54,
+      56,    62,    64,    65,    66,    67,    68,    77,    78,    79,
+      87,    95,    95,   108,   109,   110,   111
 };
 #endif
 
@@ -1280,183 +1282,120 @@ yyreduce:
   switch (yyn)
     {
         case 8:
-#line 52 "calc.y" /* yacc.c:1652  */
-    {printExpr((yyvsp[-1].expr));}
-#line 1286 "calc.tab.c" /* yacc.c:1652  */
+#line 54 "calc.y" /* yacc.c:1652  */
+    {emet(1, (yyvsp[-1].expr));}
+#line 1288 "calc.tab.c" /* yacc.c:1652  */
     break;
 
   case 10:
-#line 54 "calc.y" /* yacc.c:1652  */
+#line 56 "calc.y" /* yacc.c:1652  */
     { (yyvsp[-2].variable).value = (yyvsp[0].expr);
 				  sym_enter((yyvsp[-2].variable).nom, &(yyvsp[-2].variable).value);
-				  fprintf(yyout,"ID: %s es %s\n",(yyvsp[-2].variable).nom, varToString((yyvsp[-2].variable).value));}
-#line 1294 "calc.tab.c" /* yacc.c:1652  */
+				  emet(3, (yyvsp[-2].variable).nom, " := ", (yyvsp[0].expr).lloc);}
+#line 1296 "calc.tab.c" /* yacc.c:1652  */
     break;
 
   case 13:
-#line 63 "calc.y" /* yacc.c:1652  */
-    {
-		if ((yyvsp[-2].expr).tipo!=cadena&& (yyvsp[0].expr).tipo!=2) {
-			if ((yyvsp[-2].expr).tipo==(yyvsp[0].expr).tipo){
-				(yyval.expr).tipo=(yyvsp[-2].expr).tipo;
-				if ((yyvsp[-2].expr).tipo==entero) (yyval.expr).valor.entero=(yyvsp[-2].expr).valor.entero + (yyvsp[0].expr).valor.entero;
-				else if ((yyvsp[-2].expr).tipo==real) (yyval.expr).valor.real=(yyvsp[-2].expr).valor.real + (yyvsp[0].expr).valor.real;
-				else (yyval.expr).tipo=-1;
-			}
-			else if ((yyvsp[-2].expr).tipo==real || (yyvsp[0].expr).tipo==real){
-				(yyval.expr).tipo =real;
-				if ((yyvsp[-2].expr).tipo==real) (yyval.expr).valor.real=(yyvsp[-2].expr).valor.real + (float)(yyvsp[0].expr).valor.entero;
-				else if ((yyvsp[0].expr).tipo==real) (yyval.expr).valor.real=(float)(yyvsp[-2].expr).valor.entero + (yyvsp[0].expr).valor.real;
-				else (yyval.expr).tipo=-1;
-			}
-			else (yyval.expr).tipo=-1;
-		}				
-
-}
-#line 1317 "calc.tab.c" /* yacc.c:1652  */
+#line 65 "calc.y" /* yacc.c:1652  */
+    { emet_calculation(&(yyval.expr), (yyvsp[-2].expr), (yyvsp[0].expr), " ADD");}
+#line 1302 "calc.tab.c" /* yacc.c:1652  */
     break;
 
   case 14:
-#line 81 "calc.y" /* yacc.c:1652  */
-    {
-		if ((yyvsp[-2].expr).tipo==(yyvsp[0].expr).tipo){
-			(yyval.expr).tipo=(yyvsp[-2].expr).tipo;
-			if ((yyvsp[-2].expr).tipo==entero) (yyval.expr).valor.entero=(yyvsp[-2].expr).valor.entero - (yyvsp[0].expr).valor.entero;
-			else if ((yyvsp[-2].expr).tipo==real) (yyval.expr).valor.real=(yyvsp[-2].expr).valor.real - (yyvsp[0].expr).valor.real;
-			else (yyval.expr).tipo=-1;
-		}
-		else if ((yyvsp[-2].expr).tipo==real || (yyvsp[0].expr).tipo==real){
-			(yyval.expr).tipo =real;
-			if ((yyvsp[-2].expr).tipo==real) (yyval.expr).valor.real=(yyvsp[-2].expr).valor.real - (float)(yyvsp[0].expr).valor.entero;
-			else if ((yyvsp[0].expr).tipo==real) (yyval.expr).valor.real=(float) (yyvsp[-2].expr).valor.entero - (yyvsp[0].expr).valor.real;
-			else (yyval.expr).tipo=-1;
-		}
-		else (yyval.expr).tipo=-1;
-}
-#line 1337 "calc.tab.c" /* yacc.c:1652  */
+#line 66 "calc.y" /* yacc.c:1652  */
+    { emet_calculation(&(yyval.expr), (yyvsp[-2].expr), (yyvsp[0].expr), " SUB");}
+#line 1308 "calc.tab.c" /* yacc.c:1652  */
     break;
 
   case 15:
-#line 96 "calc.y" /* yacc.c:1652  */
+#line 67 "calc.y" /* yacc.c:1652  */
     {(yyval.expr)=(yyvsp[0].expr);}
-#line 1343 "calc.tab.c" /* yacc.c:1652  */
+#line 1314 "calc.tab.c" /* yacc.c:1652  */
     break;
 
   case 16:
-#line 97 "calc.y" /* yacc.c:1652  */
+#line 68 "calc.y" /* yacc.c:1652  */
     {
-		(yyval.expr).tipo = (yyvsp[0].expr).tipo;
-		if ((yyvsp[0].expr).tipo==entero) (yyval.expr).valor.entero = (yyvsp[0].expr).valor.entero * (-1);
-		else (yyval.expr).valor.real = (yyvsp[0].expr).valor.real * (-1);
+			(yyval.expr).lloc = nou_temporal();
+			(yyval.expr).tipo = (yyvsp[0].expr).tipo;
+			if ((yyvsp[0].expr).tipo==entero) emet(5, (yyval.expr).lloc, " := ", "CHSI ", (yyvsp[0].expr).lloc);
+			else emet(5, (yyval.expr).lloc, " := ", "CHSF ", (yyvsp[0].expr).lloc);
 }
-#line 1353 "calc.tab.c" /* yacc.c:1652  */
+#line 1325 "calc.tab.c" /* yacc.c:1652  */
     break;
 
   case 18:
-#line 106 "calc.y" /* yacc.c:1652  */
-    {
-		if ((yyvsp[-2].expr).tipo==(yyvsp[0].expr).tipo){
-			(yyval.expr).tipo=(yyvsp[-2].expr).tipo;
-			if ((yyvsp[-2].expr).tipo==entero) (yyval.expr).valor.entero=(yyvsp[-2].expr).valor.entero * (yyvsp[0].expr).valor.entero;
-			else if ((yyvsp[-2].expr).tipo==real) (yyval.expr).valor.real=(yyvsp[-2].expr).valor.real * (yyvsp[0].expr).valor.real;
-			else (yyval.expr).tipo=-1;
-		}
-		else if ((yyvsp[-2].expr).tipo==real || (yyvsp[0].expr).tipo==real){
-			(yyval.expr).tipo =real;
-			if ((yyvsp[-2].expr).tipo==real) (yyval.expr).valor.real=(yyvsp[-2].expr).valor.real * (float)(yyvsp[0].expr).valor.entero;
-			else if ((yyvsp[0].expr).tipo==real) (yyval.expr).valor.real=(float) (yyvsp[-2].expr).valor.entero * (yyvsp[0].expr).valor.real;
-			else (yyval.expr).tipo=-1;
-		}
-		else (yyval.expr).tipo=-1;
-}
-#line 1373 "calc.tab.c" /* yacc.c:1652  */
+#line 78 "calc.y" /* yacc.c:1652  */
+    {emet_calculation(&(yyval.expr), (yyvsp[-2].expr), (yyvsp[0].expr), " MUL");}
+#line 1331 "calc.tab.c" /* yacc.c:1652  */
     break;
 
   case 19:
-#line 121 "calc.y" /* yacc.c:1652  */
+#line 79 "calc.y" /* yacc.c:1652  */
     {
-		if (((yyvsp[0].expr).tipo==entero && (yyvsp[0].expr).valor.entero==entero) || ((yyvsp[0].expr).tipo==real && (yyvsp[0].expr).valor.real==entero)){
+		if (((yyvsp[0].expr).tipo==entero && atoi((yyvsp[0].expr).lloc)==0) || ((yyvsp[0].expr).tipo==real && atof((yyvsp[0].expr).lloc)==0)){
 			yyerror("No se puede dividir entre 0");
 		}	
 		else {	
-			if ((yyvsp[-2].expr).tipo==(yyvsp[0].expr).tipo){
-				(yyval.expr).tipo=(yyvsp[-2].expr).tipo;
-				if ((yyvsp[-2].expr).tipo==entero) (yyval.expr).valor.entero=(yyvsp[-2].expr).valor.entero / (yyvsp[0].expr).valor.entero;
-				else if ((yyvsp[-2].expr).tipo==real) (yyval.expr).valor.real=(yyvsp[-2].expr).valor.real / (yyvsp[0].expr).valor.real;
-				else (yyval.expr).tipo=-1;
-			}
-			else if ((yyvsp[-2].expr).tipo==real || (yyvsp[0].expr).tipo==real){
-				(yyval.expr).tipo =real;
-				if ((yyvsp[-2].expr).tipo==real) (yyval.expr).valor.real=(yyvsp[-2].expr).valor.real / (float)(yyvsp[0].expr).valor.entero;
-				else if ((yyvsp[0].expr).tipo==real) (yyval.expr).valor.real=(float) (yyvsp[-2].expr).valor.entero / (yyvsp[0].expr).valor.real;
-				else (yyval.expr).tipo=-1;
-			}
-			else (yyval.expr).tipo=-1;
+			emet_calculation(&(yyval.expr), (yyvsp[-2].expr), (yyvsp[0].expr), " DIV");
 		}
 }
-#line 1398 "calc.tab.c" /* yacc.c:1652  */
+#line 1344 "calc.tab.c" /* yacc.c:1652  */
     break;
 
   case 20:
-#line 141 "calc.y" /* yacc.c:1652  */
+#line 87 "calc.y" /* yacc.c:1652  */
     {
 		if ((yyvsp[-2].expr).tipo==entero && (yyvsp[0].expr).tipo==entero){
-			(yyval.expr).tipo=entero;
-			(yyval.expr).valor.entero=(yyvsp[-2].expr).valor.entero % (yyvsp[0].expr).valor.entero;
+			emet_calculation(&(yyval.expr), (yyvsp[-2].expr), (yyvsp[0].expr), " MOD");
 		}
-		else (yyval.expr).tipo=-1;
+		else yyerror("Solo se puede obtener el modulo entre números ENTEROS");
 }
-#line 1410 "calc.tab.c" /* yacc.c:1652  */
+#line 1355 "calc.tab.c" /* yacc.c:1652  */
     break;
 
   case 22:
-#line 150 "calc.y" /* yacc.c:1652  */
+#line 95 "calc.y" /* yacc.c:1652  */
     {
-		if ((yyvsp[-2].expr).tipo==(yyvsp[0].expr).tipo){
-			(yyval.expr).tipo=(yyvsp[-2].expr).tipo;
-			if ((yyvsp[-2].expr).tipo==entero) (yyval.expr).valor.entero=(int)pow((yyvsp[-2].expr).valor.entero, (yyvsp[0].expr).valor.entero);
-			else if ((yyvsp[-2].expr).tipo==real) (yyval.expr).valor.real=pow((yyvsp[-2].expr).valor.real, (yyvsp[0].expr).valor.real);
-			else (yyval.expr).tipo=-1;
-		}
-		else if ((yyvsp[-2].expr).tipo==real || (yyvsp[0].expr).tipo==real){
-			(yyval.expr).tipo =real;
-			if ((yyvsp[-2].expr).tipo==real) (yyval.expr).valor.real=pow((yyvsp[-2].expr).valor.real, (float)(yyvsp[0].expr).valor.entero);
-			else if ((yyvsp[0].expr).tipo==real) (yyval.expr).valor.real=pow((float) (yyvsp[-2].expr).valor.entero, (yyvsp[0].expr).valor.real);
-			else (yyval.expr).tipo=-1;
-		}
-		else (yyval.expr).tipo=-1;		
-
-
+		/*TODO: comprobar TIPO*/
+		int exponente = atoi((yyvsp[0].expr).lloc);
+		sym_value_type temp;
+		int i;
+		for (i=0; i < exponente; i++){
+			temp.lloc=nou_temporal();
+			emet_calculation(&temp, (yyvsp[-2].expr), (yyvsp[-2].expr), " MUL");
+		}	
+		(yyval.expr) = temp;	
 }
-#line 1432 "calc.tab.c" /* yacc.c:1652  */
+#line 1371 "calc.tab.c" /* yacc.c:1652  */
     break;
 
   case 23:
-#line 169 "calc.y" /* yacc.c:1652  */
+#line 108 "calc.y" /* yacc.c:1652  */
     { (yyval.expr)=(yyvsp[-1].expr);}
-#line 1438 "calc.tab.c" /* yacc.c:1652  */
+#line 1377 "calc.tab.c" /* yacc.c:1652  */
     break;
 
   case 24:
-#line 170 "calc.y" /* yacc.c:1652  */
-    { (yyval.expr).tipo=entero; (yyval.expr).valor.entero=(yyvsp[0].entero);}
-#line 1444 "calc.tab.c" /* yacc.c:1652  */
+#line 109 "calc.y" /* yacc.c:1652  */
+    { (yyval.expr).tipo=entero; (yyval.expr).lloc=(yyvsp[0].entero);}
+#line 1383 "calc.tab.c" /* yacc.c:1652  */
     break;
 
   case 25:
-#line 171 "calc.y" /* yacc.c:1652  */
-    { (yyval.expr).tipo=real; (yyval.expr).valor.real=(yyvsp[0].real);}
-#line 1450 "calc.tab.c" /* yacc.c:1652  */
+#line 110 "calc.y" /* yacc.c:1652  */
+    { (yyval.expr).tipo=real; (yyval.expr).lloc=(yyvsp[0].real);}
+#line 1389 "calc.tab.c" /* yacc.c:1652  */
     break;
 
   case 26:
-#line 172 "calc.y" /* yacc.c:1652  */
-    {sym_lookup((yyvsp[0].variable).nom, &(yyvsp[0].variable).value); (yyval.expr).tipo=(yyvsp[0].variable).value.tipo; (yyval.expr).valor=(yyvsp[0].variable).value.valor;}
-#line 1456 "calc.tab.c" /* yacc.c:1652  */
+#line 111 "calc.y" /* yacc.c:1652  */
+    {sym_lookup((yyvsp[0].variable).nom, &(yyvsp[0].variable).value); (yyval.expr).tipo=(yyvsp[0].variable).value.tipo; (yyval.expr).lloc=(yyvsp[0].variable).nom;}
+#line 1395 "calc.tab.c" /* yacc.c:1652  */
     break;
 
 
-#line 1460 "calc.tab.c" /* yacc.c:1652  */
+#line 1399 "calc.tab.c" /* yacc.c:1652  */
       default: break;
     }
   /* User semantic actions sometimes alter yychar, and that requires
@@ -1687,27 +1626,61 @@ yyreturn:
 #endif
   return yyresult;
 }
-#line 177 "calc.y" /* yacc.c:1918  */
+#line 116 "calc.y" /* yacc.c:1918  */
 
 
-char* varToString(sym_value_type var){
-   char *buffer = malloc(sizeof(char)*YYLMAX);
-   switch (var.tipo) 
-   {
-	case 0: sprintf(buffer, "un entero con valor %d", var.valor.entero); break;
-	case 1: sprintf(buffer, "un real con valor %.3f", var.valor.real); break;
-	case 2: sprintf(buffer, "una cadena con valor %s", var.valor.cadena); break;
-	case 3: sprintf(buffer, "un booleano con valor %s", var.valor.boolean ? "true" : "false");break;
-	default: sprintf(buffer, "Type not found");
-   }
-   return buffer;
+
+void emet(int args_count, ...){
+    va_list args; 
+    va_start(args, args_count); 
+    int i; 
+    for (i = 0; i < args_count; i++)  
+         fprintf(yyout,"%s", va_arg(args, char*)); 
+    fprintf(yyout, "\n");
+    va_end(args); 
+    sq++;
 }
 
+char* nou_temporal(){
+  char* buffer = (char *) malloc(sizeof(char)*3+sizeof(int));
+  sprintf(buffer, "$%d", st);
+  st++;
+  return buffer;
+}
 
-void printExpr(sym_value_type expr){
+void emet_calculation(sym_value_type *s0, sym_value_type s1, sym_value_type s2, const char* oper){
+	char *oper_int = (char *)malloc(sizeof(char)*strlen(oper)+2); /*one xtra char for trailing zero */
+	char *oper_float = (char *)malloc(sizeof(char)*strlen(oper)+2);
+	strcpy(oper_int, oper);
+	strcpy(oper_float, oper);
+	strncat(oper_int, "I ", 2);
+	strncat(oper_float, "F ", 2);
 
-	fprintf(yyout,"EXPRESION: expresion que contiene %s\n", varToString(expr));
-
+	if (s1.tipo==s2.tipo) {
+		s0->lloc=nou_temporal();
+		s0->tipo=s1.tipo;
+		char* op = s1.tipo==entero ? oper_int : oper_float;
+		emet(5,s0->lloc, " := ", s1.lloc, op, s2.lloc);
+	}
+	else if (s1.tipo==real || s2.tipo==real){
+		s0->tipo =real;
+		if (s1.tipo==real) {
+			char *castedValue = nou_temporal();
+			emet(4, castedValue, " := ", "I2F ", s2.lloc);
+			s0->lloc=nou_temporal();
+			emet(5,s0->lloc, " := ", s1.lloc, oper_float, castedValue);
+		}
+		else if (s2.tipo==real){
+			char *castedValue = nou_temporal();
+			emet(4, castedValue, " := ", "I2F ", s1.lloc);
+			s0->lloc=nou_temporal();
+			emet(5,s0->lloc, " := ", castedValue, oper_float, s2.lloc);
+		}
+		else s0->tipo=-1;
+	}
+	else s0->tipo=-1;
+	free(oper_int);
+	free(oper_float);
 }
 
 

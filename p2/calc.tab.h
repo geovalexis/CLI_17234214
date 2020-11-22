@@ -44,7 +44,7 @@
 extern int yydebug;
 #endif
 /* "%code requires" blocks.  */
-#line 20 "calc.y" /* yacc.c:1921  */
+#line 24 "calc.y" /* yacc.c:1921  */
 
 	#include "symtab.h"
 
@@ -81,18 +81,16 @@ extern int yydebug;
 
 union YYSTYPE
 {
-#line 25 "calc.y" /* yacc.c:1921  */
+#line 29 "calc.y" /* yacc.c:1921  */
 
 	struct{
 		char *nom;		
 		sym_value_type value;
 	}variable;
 	sym_value_type expr;
-	int entero;
-	float real;
-	char *str;
+	char* entero, real;
 
-#line 96 "calc.tab.h" /* yacc.c:1921  */
+#line 94 "calc.tab.h" /* yacc.c:1921  */
 };
 
 typedef union YYSTYPE YYSTYPE;

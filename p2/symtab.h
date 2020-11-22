@@ -13,8 +13,8 @@
 
 /* The type of the value field of symbol table entries                      */
 typedef struct{
-	union {int entero; float real; char *cadena; bool boolean;}valor;
-	enum tipus{entero, real, cadena, boolean}tipo;
+	char *lloc;
+	enum tipus{entero, real} tipo;
 }sym_value_type;          /* you will need to replace this    */
                                         /* with a declaration appropriate   */
                                         /* for your application.            */

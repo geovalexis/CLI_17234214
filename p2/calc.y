@@ -5,6 +5,7 @@
 #include <stdbool.h>
 #include <math.h>
 #include <string.h>
+#include <stdarg.h> 
 #include "calc.tab.h"
 #define YYLMAX 100
 
@@ -12,8 +13,11 @@ extern FILE *yyout;
 extern int yylineno;
 extern int yylex();
 extern void yyerror(const char * s);
-char* varToString(sym_value_type var);
-void printExpr(sym_value_type expr);
+int sq=1; /*siguiente squat (linea)*/
+void emet(int args_count, ...);
+int st=1; /*siguiente temporal*/
+char* nou_temporal();
+void emet_calculation(sym_value_type *s0, sym_value_type s1, sym_value_type s2, const char* oper);
 
 %}
 
@@ -28,9 +32,7 @@ void printExpr(sym_value_type expr);
 		sym_value_type value;
 	}variable;
 	sym_value_type expr;
-	int entero;
-	float real;
-	char *str;
+	char* entero, real;
 }
 
 %token <variable> ID ID_ARITM ID_BOOL
@@ -49,151 +51,122 @@ lista_declaraciones:
 
 lista_sentencias : lista_sentencias sentencia | sentencia;
 
-sentencia:  FIN_SENTENCIA | expresion FIN_SENTENCIA {printExpr($1);} | asignacion FIN_SENTENCIA;
+sentencia:  FIN_SENTENCIA | expresion FIN_SENTENCIA {emet(1, $1);} | asignacion FIN_SENTENCIA;
 
 asignacion : ID ASSIGN expresion { $1.value = $3;
 				  sym_enter($1.nom, &$1.value);
-				  fprintf(yyout,"ID: %s es %s\n",$1.nom, varToString($1.value));}
+				  emet(3, $1.nom, " := ", $3.lloc);}
 ;
 
 
 expresion: expresion_aritmetica;
 
 expresion_aritmetica: operacion_aritm_prec1 | 
-		expresion_aritmetica SUM operacion_aritm_prec1 {
-		if ($1.tipo!=cadena&& $3.tipo!=2) {
-			if ($1.tipo==$3.tipo){
-				$$.tipo=$1.tipo;
-				if ($1.tipo==entero) $$.valor.entero=$1.valor.entero + $3.valor.entero;
-				else if ($1.tipo==real) $$.valor.real=$1.valor.real + $3.valor.real;
-				else $$.tipo=-1;
-			}
-			else if ($1.tipo==real || $3.tipo==real){
-				$$.tipo =real;
-				if ($1.tipo==real) $$.valor.real=$1.valor.real + (float)$3.valor.entero;
-				else if ($3.tipo==real) $$.valor.real=(float)$1.valor.entero + $3.valor.real;
-				else $$.tipo=-1;
-			}
-			else $$.tipo=-1;
-		}				
-
-}|
-		expresion_aritmetica REST operacion_aritm_prec1 {
-		if ($1.tipo==$3.tipo){
-			$$.tipo=$1.tipo;
-			if ($1.tipo==entero) $$.valor.entero=$1.valor.entero - $3.valor.entero;
-			else if ($1.tipo==real) $$.valor.real=$1.valor.real - $3.valor.real;
-			else $$.tipo=-1;
-		}
-		else if ($1.tipo==real || $3.tipo==real){
-			$$.tipo =real;
-			if ($1.tipo==real) $$.valor.real=$1.valor.real - (float)$3.valor.entero;
-			else if ($3.tipo==real) $$.valor.real=(float) $1.valor.entero - $3.valor.real;
-			else $$.tipo=-1;
-		}
-		else $$.tipo=-1;
-}|
+		expresion_aritmetica SUM operacion_aritm_prec1 { emet_calculation(&$$, $1, $3, " ADD");}|
+		expresion_aritmetica REST operacion_aritm_prec1 { emet_calculation(&$$, $1, $3, " SUB");}|
 		SUM operacion_aritm_prec1 {$$=$2;}|			
 		REST operacion_aritm_prec1 {
-		$$.tipo = $2.tipo;
-		if ($2.tipo==entero) $$.valor.entero = $2.valor.entero * (-1);
-		else $$.valor.real = $2.valor.real * (-1);
+			$$.lloc = nou_temporal();
+			$$.tipo = $2.tipo;
+			if ($2.tipo==entero) emet(5, $$.lloc, " := ", "CHSI ", $2.lloc);
+			else emet(5, $$.lloc, " := ", "CHSF ", $2.lloc);
 }
 ;
 
 
 operacion_aritm_prec1: 	operacion_aritm_prec2 | 
-		operacion_aritm_prec1 MUL operacion_aritm_prec2 {
-		if ($1.tipo==$3.tipo){
-			$$.tipo=$1.tipo;
-			if ($1.tipo==entero) $$.valor.entero=$1.valor.entero * $3.valor.entero;
-			else if ($1.tipo==real) $$.valor.real=$1.valor.real * $3.valor.real;
-			else $$.tipo=-1;
-		}
-		else if ($1.tipo==real || $3.tipo==real){
-			$$.tipo =real;
-			if ($1.tipo==real) $$.valor.real=$1.valor.real * (float)$3.valor.entero;
-			else if ($3.tipo==real) $$.valor.real=(float) $1.valor.entero * $3.valor.real;
-			else $$.tipo=-1;
-		}
-		else $$.tipo=-1;
-}|
+		operacion_aritm_prec1 MUL operacion_aritm_prec2 {emet_calculation(&$$, $1, $3, " MUL");}|
 		operacion_aritm_prec1 DIV operacion_aritm_prec2 {
-		if (($3.tipo==entero && $3.valor.entero==entero) || ($3.tipo==real && $3.valor.real==entero)){
+		if (($3.tipo==entero && atoi($3.lloc)==0) || ($3.tipo==real && atof($3.lloc)==0)){
 			yyerror("No se puede dividir entre 0");
 		}	
 		else {	
-			if ($1.tipo==$3.tipo){
-				$$.tipo=$1.tipo;
-				if ($1.tipo==entero) $$.valor.entero=$1.valor.entero / $3.valor.entero;
-				else if ($1.tipo==real) $$.valor.real=$1.valor.real / $3.valor.real;
-				else $$.tipo=-1;
-			}
-			else if ($1.tipo==real || $3.tipo==real){
-				$$.tipo =real;
-				if ($1.tipo==real) $$.valor.real=$1.valor.real / (float)$3.valor.entero;
-				else if ($3.tipo==real) $$.valor.real=(float) $1.valor.entero / $3.valor.real;
-				else $$.tipo=-1;
-			}
-			else $$.tipo=-1;
+			emet_calculation(&$$, $1, $3, " DIV");
 		}
 }|
 		operacion_aritm_prec1 MOD operacion_aritm_prec2 {
 		if ($1.tipo==entero && $3.tipo==entero){
-			$$.tipo=entero;
-			$$.valor.entero=$1.valor.entero % $3.valor.entero;
+			emet_calculation(&$$, $1, $3, " MOD");
 		}
-		else $$.tipo=-1;
+		else yyerror("Solo se puede obtener el modulo entre números ENTEROS");
 }
 ;
 
 operacion_aritm_prec2: operacion_aritm_base | operacion_aritm_prec2 POTENCIA operacion_aritm_base {
-		if ($1.tipo==$3.tipo){
-			$$.tipo=$1.tipo;
-			if ($1.tipo==entero) $$.valor.entero=(int)pow($1.valor.entero, $3.valor.entero);
-			else if ($1.tipo==real) $$.valor.real=pow($1.valor.real, $3.valor.real);
-			else $$.tipo=-1;
-		}
-		else if ($1.tipo==real || $3.tipo==real){
-			$$.tipo =real;
-			if ($1.tipo==real) $$.valor.real=pow($1.valor.real, (float)$3.valor.entero);
-			else if ($3.tipo==real) $$.valor.real=pow((float) $1.valor.entero, $3.valor.real);
-			else $$.tipo=-1;
-		}
-		else $$.tipo=-1;		
-
-
+		/*TODO: comprobar TIPO*/
+		int exponente = atoi($3.lloc);
+		sym_value_type temp;
+		int i;
+		for (i=0; i < exponente; i++){
+			temp.lloc=nou_temporal();
+			emet_calculation(&temp, $1, $1, " MUL");
+		}	
+		$$ = temp;	
 };
 
 
 operacion_aritm_base: ABRIR_PAR expresion_aritmetica CERRAR_PAR { $$=$2;} |
-	   INTEGER { $$.tipo=entero; $$.valor.entero=$1;}|
-	   REAL { $$.tipo=real; $$.valor.real=$1;} |
-	   ID_ARITM {sym_lookup($1.nom, &$1.value); $$.tipo=$1.value.tipo; $$.valor=$1.value.valor;}
+	   INTEGER { $$.tipo=entero; $$.lloc=$1;}|
+	   REAL { $$.tipo=real; $$.lloc=$1;} |
+	   ID_ARITM {sym_lookup($1.nom, &$1.value); $$.tipo=$1.value.tipo; $$.lloc=$1.nom;}
 ;
 
 
 
 %%
 
-char* varToString(sym_value_type var){
-   char *buffer = malloc(sizeof(char)*YYLMAX);
-   switch (var.tipo) 
-   {
-	case 0: sprintf(buffer, "un entero con valor %d", var.valor.entero); break;
-	case 1: sprintf(buffer, "un real con valor %.3f", var.valor.real); break;
-	case 2: sprintf(buffer, "una cadena con valor %s", var.valor.cadena); break;
-	case 3: sprintf(buffer, "un booleano con valor %s", var.valor.boolean ? "true" : "false");break;
-	default: sprintf(buffer, "Type not found");
-   }
-   return buffer;
+
+void emet(int args_count, ...){
+    va_list args; 
+    va_start(args, args_count); 
+    int i; 
+    for (i = 0; i < args_count; i++)  
+         fprintf(yyout,"%s", va_arg(args, char*)); 
+    fprintf(yyout, "\n");
+    va_end(args); 
+    sq++;
 }
 
+char* nou_temporal(){
+  char* buffer = (char *) malloc(sizeof(char)*3+sizeof(int));
+  sprintf(buffer, "$%d", st);
+  st++;
+  return buffer;
+}
 
-void printExpr(sym_value_type expr){
+void emet_calculation(sym_value_type *s0, sym_value_type s1, sym_value_type s2, const char* oper){
+	char *oper_int = (char *)malloc(sizeof(char)*strlen(oper)+2); /*one xtra char for trailing zero */
+	char *oper_float = (char *)malloc(sizeof(char)*strlen(oper)+2);
+	strcpy(oper_int, oper);
+	strcpy(oper_float, oper);
+	strncat(oper_int, "I ", 2);
+	strncat(oper_float, "F ", 2);
 
-	fprintf(yyout,"EXPRESION: expresion que contiene %s\n", varToString(expr));
-
+	if (s1.tipo==s2.tipo) {
+		s0->lloc=nou_temporal();
+		s0->tipo=s1.tipo;
+		char* op = s1.tipo==entero ? oper_int : oper_float;
+		emet(5,s0->lloc, " := ", s1.lloc, op, s2.lloc);
+	}
+	else if (s1.tipo==real || s2.tipo==real){
+		s0->tipo =real;
+		if (s1.tipo==real) {
+			char *castedValue = nou_temporal();
+			emet(4, castedValue, " := ", "I2F ", s2.lloc);
+			s0->lloc=nou_temporal();
+			emet(5,s0->lloc, " := ", s1.lloc, oper_float, castedValue);
+		}
+		else if (s2.tipo==real){
+			char *castedValue = nou_temporal();
+			emet(4, castedValue, " := ", "I2F ", s1.lloc);
+			s0->lloc=nou_temporal();
+			emet(5,s0->lloc, " := ", castedValue, oper_float, s2.lloc);
+		}
+		else s0->tipo=-1;
+	}
+	else s0->tipo=-1;
+	free(oper_int);
+	free(oper_float);
 }
 
 
