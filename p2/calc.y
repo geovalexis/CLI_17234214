@@ -129,7 +129,7 @@ void emet(int args_count, ...){
 
 char* nou_temporal(){
   char* buffer = (char *) malloc(sizeof(char)*3+sizeof(int));
-  sprintf(buffer, "$%d", st);
+  sprintf(buffer, "$t%d", st);
   st++;
   return buffer;
 }
@@ -149,7 +149,7 @@ void emet_calculation(sym_value_type *s0, sym_value_type s1, sym_value_type s2, 
 		emet(5,s0->lloc, " := ", s1.lloc, op, s2.lloc);
 	}
 	else if (s1.tipo==real || s2.tipo==real){
-		s0->tipo =real;
+		s0->tipo=real;
 		if (s1.tipo==real) {
 			char *castedValue = nou_temporal();
 			emet(4, castedValue, " := ", "I2F ", s2.lloc);

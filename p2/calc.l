@@ -42,11 +42,11 @@ cerrar_par ")"
 {asignacion}	{return ASSIGN;}
 
 "-"?{digit}({digit})* 	{yylval.entero = (char *)malloc(sizeof(char)*yyleng);
-			strncpy(yylval.entero,yytext,yyleng);
+			strncpy(yylval.entero,yytext,yyleng); 
 			return INTEGER;}
 
 "-"?{digit}+"."{digit}+((?i:e)"-"?{digit}*)? 	{yylval.real = (char *)malloc(sizeof(char)*yyleng);
-						strncpy(yylval.real,yytext,yyleng);
+						strncpy(yylval.real,yytext,yyleng); 
 						return REAL;}
 			
 {suma} {return SUM;}
