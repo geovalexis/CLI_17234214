@@ -819,14 +819,14 @@ case 2:
 YY_RULE_SETUP
 #line 44 "calc.l"
 {yylval.entero = (char *)malloc(sizeof(char)*yyleng);
-			strncpy(yylval.entero,yytext,yyleng);
+			strncpy(yylval.entero,yytext,yyleng); 
 			return INTEGER;}
 	YY_BREAK
 case 3:
 YY_RULE_SETUP
 #line 48 "calc.l"
 {yylval.real = (char *)malloc(sizeof(char)*yyleng);
-						strncpy(yylval.real,yytext,yyleng);
+						strncpy(yylval.real,yytext,yyleng); 
 						return REAL;}
 	YY_BREAK
 case 4:

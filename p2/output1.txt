@@ -1,5 +1,5 @@
-x := 5
-i := 3
-$t1 := i MULI 3
-$t2 := i ADDI $t1
-y := $t2
+1:  x := 5 
+2:  i := 3 
+3:  $t1 := i MULI 3 
+4:  $t2 := i ADDI $t1 
+5:  y := $t2 

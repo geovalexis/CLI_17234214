@@ -1291,19 +1291,19 @@ yyreduce:
 #line 56 "calc.y" /* yacc.c:1652  */
     { (yyvsp[-2].variable).value = (yyvsp[0].expr);
 				  sym_enter((yyvsp[-2].variable).nom, &(yyvsp[-2].variable).value);
-				  emet(3, (yyvsp[-2].variable).nom, " := ", (yyvsp[0].expr).lloc);}
+				  emet(3, (yyvsp[-2].variable).nom, ":=", (yyvsp[0].expr).lloc);}
 #line 1296 "calc.tab.c" /* yacc.c:1652  */
     break;
 
   case 13:
 #line 65 "calc.y" /* yacc.c:1652  */
-    { emet_calculation(&(yyval.expr), (yyvsp[-2].expr), (yyvsp[0].expr), " ADD");}
+    { emet_calculation(&(yyval.expr), (yyvsp[-2].expr), (yyvsp[0].expr), "ADD");}
 #line 1302 "calc.tab.c" /* yacc.c:1652  */
     break;
 
   case 14:
 #line 66 "calc.y" /* yacc.c:1652  */
-    { emet_calculation(&(yyval.expr), (yyvsp[-2].expr), (yyvsp[0].expr), " SUB");}
+    { emet_calculation(&(yyval.expr), (yyvsp[-2].expr), (yyvsp[0].expr), "SUB");}
 #line 1308 "calc.tab.c" /* yacc.c:1652  */
     break;
 
@@ -1318,15 +1318,15 @@ yyreduce:
     {
 			(yyval.expr).lloc = nou_temporal();
 			(yyval.expr).tipo = (yyvsp[0].expr).tipo;
-			if ((yyvsp[0].expr).tipo==entero) emet(5, (yyval.expr).lloc, " := ", "CHSI ", (yyvsp[0].expr).lloc);
-			else emet(5, (yyval.expr).lloc, " := ", "CHSF ", (yyvsp[0].expr).lloc);
+			if ((yyvsp[0].expr).tipo==entero) emet(4, (yyval.expr).lloc, ":=", "CHSI", (yyvsp[0].expr).lloc);
+			else emet(4, (yyval.expr).lloc, ":=", "CHSF", (yyvsp[0].expr).lloc);
 }
 #line 1325 "calc.tab.c" /* yacc.c:1652  */
     break;
 
   case 18:
 #line 78 "calc.y" /* yacc.c:1652  */
-    {emet_calculation(&(yyval.expr), (yyvsp[-2].expr), (yyvsp[0].expr), " MUL");}
+    {emet_calculation(&(yyval.expr), (yyvsp[-2].expr), (yyvsp[0].expr), "MUL");}
 #line 1331 "calc.tab.c" /* yacc.c:1652  */
     break;
 
@@ -1337,7 +1337,7 @@ yyreduce:
 			yyerror("No se puede dividir entre 0");
 		}	
 		else {	
-			emet_calculation(&(yyval.expr), (yyvsp[-2].expr), (yyvsp[0].expr), " DIV");
+			emet_calculation(&(yyval.expr), (yyvsp[-2].expr), (yyvsp[0].expr), "DIV");
 		}
 }
 #line 1344 "calc.tab.c" /* yacc.c:1652  */
@@ -1347,7 +1347,7 @@ yyreduce:
 #line 87 "calc.y" /* yacc.c:1652  */
     {
 		if ((yyvsp[-2].expr).tipo==entero && (yyvsp[0].expr).tipo==entero){
-			emet_calculation(&(yyval.expr), (yyvsp[-2].expr), (yyvsp[0].expr), " MOD");
+			emet_calculation(&(yyval.expr), (yyvsp[-2].expr), (yyvsp[0].expr), "MOD");
 		}
 		else yyerror("Solo se puede obtener el modulo entre números ENTEROS");
 }
@@ -1363,7 +1363,7 @@ yyreduce:
 		int i;
 		for (i=0; i < exponente; i++){
 			temp.lloc=nou_temporal();
-			emet_calculation(&temp, (yyvsp[-2].expr), (yyvsp[-2].expr), " MUL");
+			emet_calculation(&temp, (yyvsp[-2].expr), (yyvsp[-2].expr), "MUL");
 		}	
 		(yyval.expr) = temp;	
 }
@@ -1631,19 +1631,23 @@ yyreturn:
 
 
 void emet(int args_count, ...){
+
+    fprintf(yyout,"%d:  ", sq);
+    sq++;
+
     va_list args; 
     va_start(args, args_count); 
     int i; 
     for (i = 0; i < args_count; i++)  
-         fprintf(yyout,"%s", va_arg(args, char*)); 
+         fprintf(yyout,"%s ", va_arg(args, char*)); 
     fprintf(yyout, "\n");
     va_end(args); 
-    sq++;
+
 }
 
 char* nou_temporal(){
   char* buffer = (char *) malloc(sizeof(char)*3+sizeof(int));
-  sprintf(buffer, "$%d", st);
+  sprintf(buffer, "$t%d", st);
   st++;
   return buffer;
 }
@@ -1653,28 +1657,28 @@ void emet_calculation(sym_value_type *s0, sym_value_type s1, sym_value_type s2, 
 	char *oper_float = (char *)malloc(sizeof(char)*strlen(oper)+2);
 	strcpy(oper_int, oper);
 	strcpy(oper_float, oper);
-	strncat(oper_int, "I ", 2);
-	strncat(oper_float, "F ", 2);
+	strncat(oper_int, "I", 2);
+	strncat(oper_float, "F", 2);
 
 	if (s1.tipo==s2.tipo) {
 		s0->lloc=nou_temporal();
 		s0->tipo=s1.tipo;
 		char* op = s1.tipo==entero ? oper_int : oper_float;
-		emet(5,s0->lloc, " := ", s1.lloc, op, s2.lloc);
+		emet(5,s0->lloc, ":=", s1.lloc, op, s2.lloc);
 	}
 	else if (s1.tipo==real || s2.tipo==real){
-		s0->tipo =real;
+		s0->tipo=real;
 		if (s1.tipo==real) {
 			char *castedValue = nou_temporal();
-			emet(4, castedValue, " := ", "I2F ", s2.lloc);
+			emet(4, castedValue, ":=", "I2F", s2.lloc);
 			s0->lloc=nou_temporal();
-			emet(5,s0->lloc, " := ", s1.lloc, oper_float, castedValue);
+			emet(5,s0->lloc, ":=", s1.lloc, oper_float, castedValue);
 		}
 		else if (s2.tipo==real){
 			char *castedValue = nou_temporal();
-			emet(4, castedValue, " := ", "I2F ", s1.lloc);
+			emet(4, castedValue, ":=", "I2F", s1.lloc);
 			s0->lloc=nou_temporal();
-			emet(5,s0->lloc, " := ", castedValue, oper_float, s2.lloc);
+			emet(5,s0->lloc, ":=", castedValue, oper_float, s2.lloc);
 		}
 		else s0->tipo=-1;
 	}
