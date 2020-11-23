@@ -124,7 +124,7 @@ operacion_aritm_prec1: 	operacion_aritm_prec2 |
 		else $$.tipo=-1;
 }|
 		operacion_aritm_prec1 DIV operacion_aritm_prec2 {
-		if (($3.tipo==entero && $3.valor.entero==entero) || ($3.tipo==real && $3.valor.real==entero)){
+		if (($3.tipo==entero && $3.valor.entero==0) || ($3.tipo==real && $3.valor.real==0)){
 			yyerror("No se puede dividir entre 0");
 		}	
 		else {	
@@ -278,15 +278,13 @@ char* concatenarCadenas(sym_value_type s1, sym_value_type s2){
 	char* buffer;
 	int buffer_size;
 	if ((s1.tipo==cadena) && (s2.tipo==cadena)){
-		char *s1_mod = malloc(sizeof(char)*strlen(s1.valor.cadena));
-		strncpy(s1_mod,s1.valor.cadena,strlen(s1.valor.cadena));
+		char *s1_mod = malloc(sizeof(char)*strlen(s1.valor.cadena)+1); /*One extra for \0 */
+		strncpy(s1_mod,s1.valor.cadena,strlen(s1.valor.cadena)+1);
 		s1_mod[strlen(s1_mod)-1]='\0'; /* Eliminar comilla del final */
 
-		char *s2_mod = malloc(sizeof(char)*strlen(s2.valor.cadena));
-		strncpy(s2_mod,s2.valor.cadena,strlen(s2.valor.cadena));
+		char *s2_mod = malloc(sizeof(char)*strlen(s2.valor.cadena)+1);
+		strncpy(s2_mod,s2.valor.cadena,strlen(s2.valor.cadena)+1);
 		s2_mod++; /* Eliminar primer elemento, la primera comilla en este caso*/
-
-		/*fprintf(yyout,"....CONCATENANDO s1: %s y s2: %s\"\n",s1_mod, s2_mod);	*/
 
 		buffer_size = snprintf(NULL,0, "%s%s", s1_mod, s2_mod);
 		buffer = malloc(buffer_size+1);
@@ -294,30 +292,34 @@ char* concatenarCadenas(sym_value_type s1, sym_value_type s2){
 	}
 	
 	else if (s1.tipo==cadena){
-		s1.valor.cadena[strlen(s1.valor.cadena)-1]='\0';
+		char *s1_mod = malloc(sizeof(char)*strlen(s1.valor.cadena)+1);
+		strncpy(s1_mod,s1.valor.cadena,strlen(s1.valor.cadena)+1);
+		s1_mod[strlen(s1_mod)-1]='\0';
 		if (s2.tipo==entero){	
-			buffer_size = snprintf(NULL,0, "%s%d\"", s1.valor.cadena, s2.valor.entero);
+			buffer_size = snprintf(NULL,0, "%s%d\"", s1_mod, s2.valor.entero);
 buffer = malloc(buffer_size+1);
 
-			snprintf(buffer, buffer_size+1, "%s%d\"", s1.valor.cadena, s2.valor.entero);
+			snprintf(buffer, buffer_size+1, "%s%d\"", s1_mod, s2.valor.entero);
 		}
 		else if (s2.tipo==real){	
-			buffer_size = snprintf(NULL, 0, "%s%.3f\"",s1.valor.cadena, s2.valor.real);		
+			buffer_size = snprintf(NULL, 0, "%s%.3f\"",s1_mod, s2.valor.real);		
 buffer = malloc(buffer_size+1);
-			snprintf(buffer, buffer_size+1, "%s%.3f\"",s1.valor.cadena, s2.valor.real);
+			snprintf(buffer, buffer_size+1, "%s%.3f\"",s1_mod, s2.valor.real);
 		}
 	}
 	else if (s2.tipo==cadena){
-		s2.valor.cadena++;
+		char *s2_mod = malloc(sizeof(char)*strlen(s2.valor.cadena)+1);
+		strncpy(s2_mod,s2.valor.cadena,strlen(s2.valor.cadena)+1);
+		s2_mod++;
 		if (s1.tipo==entero){
-			buffer_size = snprintf(NULL, 0, "\"%d%s", s1.valor.entero, s2.valor.cadena);
+			buffer_size = snprintf(NULL, 0, "\"%d%s", s1.valor.entero, s2_mod);
 buffer = malloc(buffer_size+1);
-			snprintf(buffer, buffer_size+1, "\"%d%s", s1.valor.entero, s2.valor.cadena);
+			snprintf(buffer, buffer_size+1, "\"%d%s", s1.valor.entero, s2_mod);
 		}
 		else if (s1.tipo==real){
-			buffer_size = snprintf(NULL, 0, "\"%.3f%s", s1.valor.real,s2.valor.cadena);
+			buffer_size = snprintf(NULL, 0, "\"%.3f%s", s1.valor.real,s2_mod);
 buffer = malloc(buffer_size+1);
-			snprintf(buffer, buffer_size, "\"%.3f%s", s1.valor.real,s2.valor.cadena);
+			snprintf(buffer, buffer_size+1, "\"%.3f%s", s1.valor.real,s2_mod);
 		}
 	}
 	else yyerror("Algo ha fallado. No se ha podido concatenar.");

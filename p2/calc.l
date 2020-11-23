@@ -41,12 +41,12 @@ cerrar_par ")"
 
 {asignacion}	{return ASSIGN;}
 
-"-"?{digit}({digit})* 	{yylval.entero = (char *)malloc(sizeof(char)*yyleng);
-			strncpy(yylval.entero,yytext,yyleng); 
+"-"?{digit}({digit})* 	{yylval.entero = (char *)malloc(sizeof(char)*yyleng+1);
+			strncpy(yylval.entero,yytext,yyleng+1); 
 			return INTEGER;}
 
-"-"?{digit}+"."{digit}+((?i:e)"-"?{digit}*)? 	{yylval.real = (char *)malloc(sizeof(char)*yyleng);
-						strncpy(yylval.real,yytext,yyleng); 
+"-"?{digit}+"."{digit}+((?i:e)"-"?{digit}*)? 	{yylval.real = (char *)malloc(sizeof(char)*yyleng+1);
+						strncpy(yylval.real,yytext,yyleng+1); 
 						return REAL;}
 			
 {suma} {return SUM;}
@@ -76,8 +76,8 @@ cerrar_par ")"
 
  /* IDENTIFICADORES. Importante que esta ultima definicion esté a lo último por si hay alguna coincidencia con palabras reservadas */
 {letra}({letra}|{digit})*    {  sym_value_type value;
-				yylval.variable.nom = (char *)malloc(sizeof(char)*yyleng);
-				strncpy(yylval.variable.nom,yytext,yyleng);
+				yylval.variable.nom = (char *)malloc(sizeof(char)*yyleng+1); 
+				strncpy(yylval.variable.nom,yytext,yyleng+1);
 				if (sym_lookup(yytext, &value) == SYMTAB_OK) {
 					return ID_ARITM;
 				} else return ID;}

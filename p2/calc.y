@@ -108,7 +108,7 @@ operacion_aritm_prec2: operacion_aritm_base | operacion_aritm_prec2 POTENCIA ope
 operacion_aritm_base: ABRIR_PAR expresion_aritmetica CERRAR_PAR { $$=$2;} |
 	   INTEGER { $$.tipo=entero; $$.lloc=$1;}|
 	   REAL { $$.tipo=real; $$.lloc=$1;} |
-	   ID_ARITM {sym_lookup($1.nom, &$1.value); $$.tipo=$1.value.tipo; $$.lloc=$1.nom;}
+	   ID_ARITM {sym_lookup($1.nom, &$1.value); $$.tipo=$1.value.tipo; $$.lloc=$1.nom; }
 ;
 
 
@@ -143,8 +143,8 @@ void emet_calculation(sym_value_type *s0, sym_value_type s1, sym_value_type s2, 
 	char *oper_float = (char *)malloc(sizeof(char)*strlen(oper)+2);
 	strcpy(oper_int, oper);
 	strcpy(oper_float, oper);
-	strncat(oper_int, "I", 2);
-	strncat(oper_float, "F", 2);
+	strncat(oper_int, "I", 1);
+	strncat(oper_float, "F", 1);
 
 	if (s1.tipo==s2.tipo) {
 		s0->lloc=nou_temporal();

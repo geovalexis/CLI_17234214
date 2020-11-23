@@ -909,8 +909,8 @@ case 17:
 YY_RULE_SETUP
 #line 78 "calc.l"
 {  sym_value_type value;
-				yylval.variable.nom = (char *)malloc(sizeof(char)*yyleng);
-				strncpy(yylval.variable.nom,yytext,yyleng);
+				yylval.variable.nom = (char *)malloc(sizeof(char)*yyleng+1); 
+				strncpy(yylval.variable.nom,yytext,yyleng+1);
 				if (sym_lookup(yytext, &value) == SYMTAB_OK) {
 					return ID_ARITM;
 				} else return ID;}

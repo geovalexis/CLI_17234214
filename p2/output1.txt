@@ -2,5 +2,6 @@
 2:  i := 3 
 3:  $t1 := i MULI 3 
 4:  $t2 := i ADDI $t1 
-5:  $t3 := $t2 SUBI xhQœ§U 
-6:  y := $t3 
+5:  $t3 := I2F $t2 
+6:  $t4 := $t3 SUBF x 
+7:  y := $t4 

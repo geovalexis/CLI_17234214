@@ -1390,7 +1390,7 @@ yyreduce:
 
   case 26:
 #line 111 "calc.y" /* yacc.c:1652  */
-    {sym_lookup((yyvsp[0].variable).nom, &(yyvsp[0].variable).value); (yyval.expr).tipo=(yyvsp[0].variable).value.tipo; (yyval.expr).lloc=(yyvsp[0].variable).nom;}
+    {sym_lookup((yyvsp[0].variable).nom, &(yyvsp[0].variable).value); (yyval.expr).tipo=(yyvsp[0].variable).value.tipo; (yyval.expr).lloc=(yyvsp[0].variable).nom; }
 #line 1395 "calc.tab.c" /* yacc.c:1652  */
     break;
 
@@ -1657,8 +1657,8 @@ void emet_calculation(sym_value_type *s0, sym_value_type s1, sym_value_type s2, 
 	char *oper_float = (char *)malloc(sizeof(char)*strlen(oper)+2);
 	strcpy(oper_int, oper);
 	strcpy(oper_float, oper);
-	strncat(oper_int, "I", 2);
-	strncat(oper_float, "F", 2);
+	strncat(oper_int, "I", 1);
+	strncat(oper_float, "F", 1);
 
 	if (s1.tipo==s2.tipo) {
 		s0->lloc=nou_temporal();
