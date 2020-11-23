@@ -33,7 +33,7 @@ Para la compilación del programa es necesario ejecutar los siguientes comandos:
 ```bash
 make all
 ```
-Se generán diferentes ficheros intermedios pero el archivo que nos interesará es el que tiene de nombre ```calc```. Probablemente salten un monton de warnings que deberia de mirar e intentar solucionar para la próxima.
+Se generán diferentes ficheros intermedios pero el archivo que nos interesará es el que tiene de nombre ```calc```. Probablemente salten un monton de warnings pero todos estos son debido a temas ajenos a la sintaxis y grámatica implementada.
 ### 2. Ejecucion
 Una vez compilado podremos ejecutar el programa mediante:
 ```bash
@@ -45,7 +45,8 @@ En caso de que queramos limpiar todos los archivos resultantes de la compilació
 make clean
 ```
 ## Resultados
-A modo de juego de pruebas tengo dos archivos llamados ```input1.txt``` y ```input2.txt```, cuya ejecución con la versión actual de programa debería de producir los resultados espeficados en ```output1.txt``` y ```output2.txt``` respectivamente. El ```input2.txt``` es el correspondiente al enunciado de la práctica aunque con la penúltima sentencia ligeramente modificada (he quitado el identificado b ya que es un booleano y daría sintax error, no se si está a posta o sin querer) para obtener un output correcto. En este mismo output verás que el primer "hola" no esta del todo correcto, le falta la "a" y no he podido solucionarlo, estuve un buen rato buscando el error y solo llegue a identificar que se trata de algo de tamaño del buffer porque si printeo las expresiones justo antes de realizar el snprintf ambas variables están completas. 
+A modo de juego de pruebas tengo dos archivos llamados ```input1.txt``` y ```input2.txt```, cuya ejecución con la versión actual de programa debería de producir los resultados espeficados en ```output1.txt``` y ```output2.txt``` respectivamente. El ```input2.txt``` es el correspondiente al enunciado de la práctica aunque con la penúltima sentencia ligeramente modificada (he quitado el identificado b ya que es un booleano y daría sintax error, no se si está a posta o sin querer) para obtener un output correcto.
 ## Limitaciones (TODOs)
 * Potenciales errores de cálculo que no estan contemplados.
 * Se podrían mostrar mas posibles errores.
+* No estan implementadas las funciones opcionales.
