@@ -20,8 +20,9 @@ int sq=1; /*siguiente squat (linea)*/
 void emet(int args_count, ...);
 int st=1; /*siguiente temporal*/
 char* nou_temporal();
+char *temp_sq;
 void emet_calculation(sym_value_type *s0, sym_value_type s1, sym_value_type s2, const char* oper);
-
+void emet_salto_condicional(sym_value_type s1, const char* operel, sym_value_type s2, char* line2jump);
 %}
 
 %code requires {
@@ -40,28 +41,31 @@ void emet_calculation(sym_value_type *s0, sym_value_type s1, sym_value_type s2, 
 
 %token <variable> ID ID_ARITM ID_BOOL
 %token <cadena> INTEGER REAL 
-%token ASSIGN POTENCIA SUM REST MUL DIV MOD AND NEG OR FIN_SENTENCIA ABRIR_PAR CERRAR_PAR
+%token ASSIGN POTENCIA SUM REST MUL DIV MOD AND NEG OR FIN_SENTENCIA ABRIR_PAR CERRAR_PAR REPEAT DO DONE
 
-%type <expr> expresion expresion_aritmetica  operacion_aritm_base operacion_aritm_prec1 operacion_aritm_prec2
+%type <expr> expresion expresion_aritmetica  operacion_aritm_base operacion_aritm_prec1 operacion_aritm_prec2 M
 
+%type <variable> id
 
 %%
 
-programa: lista_declaraciones | lista_sentencias {print_sentences();}; /*NOTE: Puede dar problemas*/
-
-lista_declaraciones: {};
+programa: lista_sentencias {print_sentences();};
 
 lista_sentencias : lista_sentencias sentencia | sentencia;
 
-sentencia:  FIN_SENTENCIA | expresion FIN_SENTENCIA {emet(1, $1);} | asignacion FIN_SENTENCIA;
+sentencia: sentencia_simple | sentencias_iterativas;
 
-asignacion : ID ASSIGN expresion { $1.value = $3;
+sentencia_simple:  FIN_SENTENCIA | expresion FIN_SENTENCIA {emet(1, $1);} | asignacion FIN_SENTENCIA;
+
+asignacion : id ASSIGN expresion { $1.value = $3;
 				  sym_enter($1.nom, &$1.value);
 				  emet(3, $1.nom, ":=", $3.lloc);}
 ;
 
+id: ID | ID_ARITM;
 
-expresion: expresion_aritmetica;
+
+expresion: expresion_aritmetica; /*Habrá que completarlo para la practica 3*/
 
 expresion_aritmetica: operacion_aritm_prec1 | 
 		expresion_aritmetica SUM operacion_aritm_prec1 { emet_calculation(&$$, $1, $3, "ADD");}|
@@ -113,6 +117,25 @@ operacion_aritm_base: ABRIR_PAR expresion_aritmetica CERRAR_PAR { $$=$2;} |
 	   ID_ARITM {sym_lookup($1.nom, &$1.value); $$.tipo=$1.value.tipo; $$.lloc=$1.nom; }
 ;
 
+sentencias_iterativas: sentencia_iterativa_incondicional; /*Habrá que añadir más en la P3*/
+
+sentencia_iterativa_incondicional: REPEAT expresion_aritmetica M DO lista_sentencias DONE {
+	if ($3.tipo==entero) emet(5, $3.lloc, ":=", $3.lloc, "ADDI", "1");
+	else if ($3.tipo==real) emet(5, $3.lloc, ":=", $3.lloc, "ADDF", "1");
+	else yyerror("Bad request");
+	emet_salto_condicional($3, "LT", $2, temp_sq);
+};
+
+
+/* M contendrá la información del contador del bucle y guardará la línea donde empieza el bucle*/
+M : {$$.lloc = malloc(sizeof(char)*5);
+     $$.tipo = entero; /*Un contador siempre es un entero*/
+     strcpy($$.lloc, nou_temporal());
+     emet(3, $$.lloc, ":=", "0");
+     temp_sq = malloc(sizeof(char)*5);
+     sprintf(temp_sq, "%d", sq);     
+};
+
 
 
 %%
@@ -121,6 +144,7 @@ void print_sentences(){
    int i;
    for (i=1; i < sq; i++)
 	fprintf(yyout, "%d:  %s\n", i, matriz_sentencias[i]);
+   fprintf(yyout, "%d:  HALT\n", sq);
 
 }
 
@@ -181,6 +205,19 @@ void emet_calculation(sym_value_type *s0, sym_value_type s1, sym_value_type s2, 
 	else s0->tipo=-1;
 	free(oper_int);
 	free(oper_float);
+}
+
+void emet_salto_condicional(sym_value_type s1, const char* operel, sym_value_type s2, char* line2jump){
+	if (s1.tipo==s2.tipo) {
+		char *op= (char *)malloc(sizeof(char)*strlen(operel)+2);
+		strcpy(op, operel);
+		if (s1.tipo==entero) strcat(op, "I");
+	 	else strcat(op, "F");
+		emet(6, "IF", s1.lloc, op, s2.lloc, "GOTO", line2jump);
+		free(op);
+	}
+	else yyerror("Tienen que tener el mismo tipo!");
+
 }
 
 

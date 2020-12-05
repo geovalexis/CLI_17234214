@@ -47,7 +47,8 @@ cerrar_par ")"
 "-"?{digit}+"."{digit}+((?i:e)"-"?{digit}*)? 	{yylval.cadena = (char *)malloc(sizeof(char)*yyleng+1);
 						strncpy(yylval.cadena,yytext,yyleng+1); 
 						return REAL;}
-			
+
+ /* EXPRESIONES ARITMETICAS */ 			
 {suma} {return SUM;}
 
 {resta} {return REST;}
@@ -64,6 +65,13 @@ cerrar_par ")"
 
 {cerrar_par} {return CERRAR_PAR;}
 
+ /*SENTENCIAS ITERATIVAS */
+
+"repeat" {return REPEAT;};
+
+"do" {return DO;};
+
+"done" {return DONE;};
 
  /* COMENTARIOS */
 {comentario_linea}(.)*{linebreak}  {}
