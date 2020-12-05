@@ -4,19 +4,19 @@ LEX = flex
 YACC = bison
 
 LIB = -lc -lm
-ELEX = calc.l
-EYACC = calc.y
-OBJ = calc.o calc.o calc.o
+ELEX = compiler.l
+EYACC = compiler.y
+OBJ = compiler.o compiler.o compiler.o
 
-SRC = calc.c symtab.c
-SRCL = calc.flex.c
-SRCY = calc.tab.c #Se genera tambien un calc.tab.h
+SRC = compiler.c symtab.c
+SRCL = compiler.flex.c
+SRCY = compiler.tab.c #Se genera tambien un compiler.tab.h
 
-BIN = calc
+BIN = compiler
 LFLAGS = -n -o $*.c 
 YFLAGS = -d -v -o $*.c
 CFLAGS = -ansi -Wall -g
-OTHERS = calc.tab.h calc.output
+OTHERS = compiler.tab.h compiler.output
 
 ######################################################################
 

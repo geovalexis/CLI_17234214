@@ -6,7 +6,7 @@
 #include <math.h>
 #include <string.h>
 #include <stdarg.h> 
-#include "calc.tab.h"
+#include "compiler.tab.h"
 #define YYLMAX 100
 
 extern FILE *yyout;
