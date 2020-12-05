@@ -16,4 +16,6 @@
 16:  i := $t08 
 17:  $t06 := $t06 ADDI 1 
 18:  IF $t06 LTI $t05 GOTO 13 
-19:  HALT
+19:  PARAM fact 
+20:  CALL PUTI, 1 
+21:  HALT

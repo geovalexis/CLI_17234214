@@ -55,7 +55,7 @@ lista_sentencias : lista_sentencias sentencia | sentencia;
 
 sentencia: sentencia_simple | sentencias_iterativas;
 
-sentencia_simple:  FIN_SENTENCIA | expresion FIN_SENTENCIA {emet(1, $1);} | asignacion FIN_SENTENCIA;
+sentencia_simple:  FIN_SENTENCIA| asignacion FIN_SENTENCIA | procedimientos FIN_SENTENCIA;
 
 asignacion : id ASSIGN expresion { $1.value = $3;
 				  sym_enter($1.nom, &$1.value);
@@ -136,7 +136,17 @@ M : {$$.lloc = malloc(sizeof(char)*5);
      sprintf(temp_sq, "%d", sq);     
 };
 
+procedimientos: put;
 
+put: ID_ARITM {
+	sym_lookup($1.nom, &$1.value);
+	emet(2, "PARAM", $1.nom);
+	char* oper = malloc(sizeof(char)*5);
+	strcpy(oper, "PUT");
+	if ($1.value.tipo==entero) strcat(oper, "I,");
+	else if ($1.value.tipo==real) strcat(oper, "F,");
+	emet(3, "CALL", oper, "1");
+};
 
 %%
 
