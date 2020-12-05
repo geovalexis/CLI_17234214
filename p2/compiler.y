@@ -8,11 +8,14 @@
 #include <stdarg.h> 
 #include "compiler.tab.h"
 #define YYLMAX 100
+#define SENTENCE_MAX_LENGTH 50
 
 extern FILE *yyout;
 extern int yylineno;
 extern int yylex();
 extern void yyerror(const char * s);
+char *matriz_sentencias[YYLMAX];
+void print_sentences();
 int sq=1; /*siguiente squat (linea)*/
 void emet(int args_count, ...);
 int st=1; /*siguiente temporal*/
@@ -32,12 +35,11 @@ void emet_calculation(sym_value_type *s0, sym_value_type s1, sym_value_type s2, 
 		sym_value_type value;
 	}variable;
 	sym_value_type expr;
-	char *entero, *real;
+	char *cadena;
 }
 
 %token <variable> ID ID_ARITM ID_BOOL
-%token <entero> INTEGER 
-%token <real> REAL 
+%token <cadena> INTEGER REAL 
 %token ASSIGN POTENCIA SUM REST MUL DIV MOD AND NEG OR FIN_SENTENCIA ABRIR_PAR CERRAR_PAR
 
 %type <expr> expresion expresion_aritmetica  operacion_aritm_base operacion_aritm_prec1 operacion_aritm_prec2
@@ -45,9 +47,9 @@ void emet_calculation(sym_value_type *s0, sym_value_type s1, sym_value_type s2, 
 
 %%
 
-programa: lista_declaraciones | lista_sentencias;
+programa: lista_declaraciones | lista_sentencias {print_sentences();}; /*NOTE: Puede dar problemas*/
 
-lista_declaraciones: 
+lista_declaraciones: {};
 
 lista_sentencias : lista_sentencias sentencia | sentencia;
 
@@ -115,25 +117,33 @@ operacion_aritm_base: ABRIR_PAR expresion_aritmetica CERRAR_PAR { $$=$2;} |
 
 %%
 
+void print_sentences(){
+   int i;
+   for (i=1; i < sq; i++)
+	fprintf(yyout, "%d:  %s\n", i, matriz_sentencias[i]);
+
+}
+
 
 void emet(int args_count, ...){
 
-    fprintf(yyout,"%d:  ", sq);
-    sq++;
-
     va_list args; 
     va_start(args, args_count); 
-    int i; 
-    for (i = 0; i < args_count; i++)  
-         fprintf(yyout,"%s ", va_arg(args, char*)); 
-    fprintf(yyout, "\n");
+    char *buffer = malloc(sizeof(char)*SENTENCE_MAX_LENGTH+1);
+    int i;
+    for (i=0; i < args_count; i++){  
+         strcat(buffer,va_arg(args, char*)); 
+         strcat(buffer," ");
+    }
+    matriz_sentencias[sq] = buffer;
+    sq++;
     va_end(args); 
 
 }
 
 char* nou_temporal(){
   char* buffer = (char *) malloc(sizeof(char)*3+sizeof(int));
-  sprintf(buffer, "$t%d", st);
+  sprintf(buffer, "$t0%d", st);
   st++;
   return buffer;
 }
@@ -143,8 +153,8 @@ void emet_calculation(sym_value_type *s0, sym_value_type s1, sym_value_type s2, 
 	char *oper_float = (char *)malloc(sizeof(char)*strlen(oper)+2);
 	strcpy(oper_int, oper);
 	strcpy(oper_float, oper);
-	strncat(oper_int, "I", 1);
-	strncat(oper_float, "F", 1);
+	strcat(oper_int, "I");
+	strcat(oper_float, "F");
 
 	if (s1.tipo==s2.tipo) {
 		s0->lloc=nou_temporal();

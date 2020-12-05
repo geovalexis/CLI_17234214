@@ -16,7 +16,6 @@ char *string_buffer;
 
 %option yylineno
 %x comment
-%x cadena
 
 digit [0-9]
 letra [a-zA-Z]
@@ -41,12 +40,12 @@ cerrar_par ")"
 
 {asignacion}	{return ASSIGN;}
 
-"-"?{digit}({digit})* 	{yylval.entero = (char *)malloc(sizeof(char)*yyleng+1);
-			strncpy(yylval.entero,yytext,yyleng+1); 
+"-"?{digit}({digit})* 	{yylval.cadena = (char *)malloc(sizeof(char)*yyleng+1);
+			strncpy(yylval.cadena,yytext,yyleng+1); 
 			return INTEGER;}
 
-"-"?{digit}+"."{digit}+((?i:e)"-"?{digit}*)? 	{yylval.real = (char *)malloc(sizeof(char)*yyleng+1);
-						strncpy(yylval.real,yytext,yyleng+1); 
+"-"?{digit}+"."{digit}+((?i:e)"-"?{digit}*)? 	{yylval.cadena = (char *)malloc(sizeof(char)*yyleng+1);
+						strncpy(yylval.cadena,yytext,yyleng+1); 
 						return REAL;}
 			
 {suma} {return SUM;}
