@@ -99,15 +99,20 @@ operacion_aritm_prec1: 	operacion_aritm_prec2 |
 ;
 
 operacion_aritm_prec2: operacion_aritm_base | operacion_aritm_prec2 POTENCIA operacion_aritm_base {
-		/*TODO: comprobar TIPO*/
-		int exponente = atoi($3.lloc);
-		sym_value_type temp;
-		int i;
-		for (i=0; i < exponente; i++){
-			temp.lloc=nou_temporal();
-			emet_calculation(&temp, $1, $1, "MUL");
-		}	
-		$$ = temp;	
+		if ($3.tipo==entero){
+			int exponente = atoi($3.lloc);
+			sym_value_type temp, result;
+			temp.lloc = (char*)malloc(sizeof(char)*strlen($1.lloc)+2);
+			strcpy(temp.lloc, $1.lloc);
+			temp.tipo = $1.tipo;
+			int i;
+			for (i=0; i < exponente; i++){
+				result.lloc=nou_temporal();
+				emet_calculation(&result, $1, temp, "MUL");
+				strcpy(temp.lloc, result.lloc);
+			}	
+			$$ = result;
+		} else yyerror("OPERACION NO DISPONIBLE.");	
 };
 
 
@@ -210,9 +215,9 @@ void emet_calculation(sym_value_type *s0, sym_value_type s1, sym_value_type s2, 
 			s0->lloc=nou_temporal();
 			emet(5,s0->lloc, ":=", castedValue, oper_float, s2.lloc);
 		}
-		else s0->tipo=-1;
+		else yyerror("OPERACION NO PERMITIDA");
 	}
-	else s0->tipo=-1;
+	else yyerror("OPERACION NO PERMITIDA");
 	free(oper_int);
 	free(oper_float);
 }

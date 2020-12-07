@@ -53,9 +53,9 @@ cerrar_par ")"
 
 {resta} {return REST;}
 
-{mult}[^/{mult}] {return MUL;}
+{mult} {return MUL;}
 
-{pot}/{digit} {return POTENCIA;}
+{pot} {ECHO;return POTENCIA;}
 
 {div}[^/*] {return DIV;}
 
