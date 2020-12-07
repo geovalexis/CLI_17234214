@@ -55,7 +55,7 @@ cerrar_par ")"
 
 {mult} {return MUL;}
 
-{pot} {ECHO;return POTENCIA;}
+{pot} {return POTENCIA;}
 
 {div}[^/*] {return DIV;}
 
