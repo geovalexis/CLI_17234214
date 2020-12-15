@@ -40,10 +40,10 @@ void emet_salto_condicional(sym_value_type s1, const char* operel, sym_value_typ
 }
 
 %token <variable> ID ID_ARITM ID_BOOL
-%token <cadena> INTEGER REAL 
-%token ASSIGN POTENCIA SUM REST MUL DIV MOD AND NEG OR FIN_SENTENCIA ABRIR_PAR CERRAR_PAR REPEAT DO DONE
+%token <cadena> INTEGER REAL BOOLEAN
+%token ASSIGN POTENCIA SUM REST MUL DIV MOD AND NEG OR FIN_SENTENCIA ABRIR_PAR CERRAR_PAR GT LT GE LE EQ NE BOOL_TRUE BOOL_FALSE REPEAT DO DONE
 
-%type <expr> expresion expresion_aritmetica  operacion_aritm_base operacion_aritm_prec1 operacion_aritm_prec2 M
+%type <expr> expresion expresion_aritmetica  operacion_aritm_base operacion_aritm_prec1 operacion_aritm_prec2 M expresion_bool operacion_boolean_con_aritm operacion_boolean_prec1 operacion_boolean_prec2 operacion_boolean_base
 
 %type <variable> id
 
@@ -65,7 +65,7 @@ asignacion : id ASSIGN expresion { $1.value = $3;
 id: ID | ID_ARITM;
 
 
-expresion: expresion_aritmetica; /*Habrá que completarlo para la practica 3*/
+expresion: expresion_aritmetica | expresion_bool;
 
 expresion_aritmetica: operacion_aritm_prec1 | 
 		expresion_aritmetica SUM operacion_aritm_prec1 { emet_calculation(&$$, $1, $3, "ADD");}|
@@ -121,6 +121,29 @@ operacion_aritm_base: ABRIR_PAR expresion_aritmetica CERRAR_PAR { $$=$2;} |
 	   REAL { $$.tipo=real; $$.lloc=$1;} |
 	   ID_ARITM {sym_lookup($1.nom, &$1.value); $$.tipo=$1.value.tipo; $$.lloc=$1.nom; }
 ;
+
+expresion_bool: operacion_boolean_prec1 | 
+		expresion_bool OR operacion_boolean_prec1; 
+
+operacion_boolean_prec1: operacion_boolean_prec2 |
+		operacion_boolean_prec1 AND operacion_boolean_prec2 ; 
+
+operacion_boolean_prec2: operacion_boolean_base | 
+		NEG operacion_boolean_prec2; 
+
+operacion_boolean_base: ABRIR_PAR expresion_bool CERRAR_PAR { $$=$2;} | operacion_boolean_con_aritm |
+	   BOOLEAN { $$.tipo=boolean; $$.lloc=$1;} |
+	   ID_BOOL { sym_lookup($1.nom, &$1.value); $$.tipo=$1.value.tipo; $$.lloc=$1.nom;}
+;
+
+
+operacion_boolean_con_aritm: expresion_aritmetica GT expresion_aritmetica|
+		expresion_aritmetica LT expresion_aritmetica |
+		expresion_aritmetica GE expresion_aritmetica |
+		expresion_aritmetica LE expresion_aritmetica |
+		expresion_aritmetica EQ expresion_aritmetica |
+		expresion_aritmetica NE expresion_aritmetica;
+
 
 sentencias_iterativas: sentencia_iterativa_incondicional; /*Habrá que añadir más en la P3*/
 

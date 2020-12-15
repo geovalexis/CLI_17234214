@@ -14,7 +14,7 @@
 /* The type of the value field of symbol table entries                      */
 typedef struct{
 	char *lloc;
-	enum tipus{entero, real} tipo;
+	enum tipus{entero, real, boolean} tipo;
 }sym_value_type;          /* you will need to replace this    */
                                         /* with a declaration appropriate   */
                                         /* for your application.            */

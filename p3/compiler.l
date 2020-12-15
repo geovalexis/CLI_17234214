@@ -65,6 +65,27 @@ cerrar_par ")"
 
 {cerrar_par} {return CERRAR_PAR;}
 
+ /* OPERADORES RELACIONALES */
+">"  {return GT;}
+">=" {return GE;}
+"<" {return LT;} 
+"<=" {return LE;}
+"=" {return EQ;}
+"<>" {return NE;}
+
+ /* OPERADORES BOOLEANOS */
+"not" {return NEG;}
+"and" {return AND;}
+"or"  {return OR;}
+
+ /* LITERALES BOOLEANOS */
+"true" 	{yylval.cadena = (char *)malloc(sizeof(char)*yyleng+1);
+	strncpy(yylval.cadena,yytext,yyleng+1); 
+	return BOOLEAN;}
+"false" {yylval.cadena = (char *)malloc(sizeof(char)*yyleng+1);
+	strncpy(yylval.cadena,yytext,yyleng+1); 
+	return BOOLEAN;}
+
  /*SENTENCIAS ITERATIVAS */
 
 "repeat" {return REPEAT;};
@@ -86,7 +107,8 @@ cerrar_par ")"
 				yylval.variable.nom = (char *)malloc(sizeof(char)*yyleng+1); 
 				strncpy(yylval.variable.nom,yytext,yyleng+1);
 				if (sym_lookup(yytext, &value) == SYMTAB_OK) {
-					return ID_ARITM;
+					if (value.tipo==boolean) return ID_BOOL;
+					else return ID_ARITM;
 				} else return ID;}
 
 
