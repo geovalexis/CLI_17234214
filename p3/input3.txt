@@ -1,0 +1,18 @@
+/*Comentarios 
+en 
+diferentes 
+lineas*/
+
+// Comentarios de 1 linea
+
+// LLamadas a procedimientos
+imprimir := 8.3
+imprimir
+
+// sentencia iteratica incondicional
+n := 3
+i := 0
+repeat n do
+   i := i + 1
+done
+i 

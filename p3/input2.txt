@@ -1,0 +1,32 @@
+// Operaciones aritmeticas con enteros
+suma := 2 + 3
+resta := 8 - 2
+mul := 3 * 3
+div := 8 / 4
+modulo := 9 mod 2
+
+// Operaciones aritmeticas con reales
+suma := 2.5 + 3.1
+resta := 8.3 - 2.8
+mul := 3.4 * 3.5
+div := 10.4 / 4.0
+
+// Operaciones arimeticas con tipos mezclados
+suma := 2 + 3.1
+suma := 2.1 + 3
+resta := 8 - 2.3
+resta := 8.3 - 2
+mul := 3 * 3.5
+mul := 3.5 * 3
+div := 10 / 4.5
+div := 10.5 / 4
+
+
+// Potencias
+pot := 2 ** 3
+pot := 2.5 ** 2
+
+// Operaciones combinadas
+x := 2 + 8 * 3 - 5
+y := 12 * (2 + 3) / 6
+z := 4 / 2 * 3 * (5 + 6) 

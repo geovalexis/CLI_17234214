@@ -1,0 +1,13 @@
+1:  imprimir := 8.3 
+2:  PARAM imprimir 
+3:  CALL PUTF, 1 
+4:  n := 3 
+5:  i := 0 
+6:  $t01 := 0 
+7:  $t02 := i ADDI 1 
+8:  i := $t02 
+9:  $t01 := $t01 ADDI 1 
+10:  IF $t01 LTI n GOTO 7 
+11:  PARAM i 
+12:  CALL PUTI, 1 
+13:  HALT

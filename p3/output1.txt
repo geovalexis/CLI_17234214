@@ -1,0 +1,21 @@
+1:  x := 5.0 
+2:  i := 3 
+3:  $t01 := i MULI 3 
+4:  $t02 := i ADDI $t01 
+5:  $t03 := I2F $t02 
+6:  $t04 := $t03 SUBF x 
+7:  y := $t04 
+8:  n := 10 
+9:  fact := 1 
+10:  i := 2 
+11:  $t05 := n SUBI 1 
+12:  $t06 := 0 
+13:  $t07 := fact MULI i 
+14:  fact := $t07 
+15:  $t08 := i ADDI 1 
+16:  i := $t08 
+17:  $t06 := $t06 ADDI 1 
+18:  IF $t06 LTI $t05 GOTO 13 
+19:  PARAM fact 
+20:  CALL PUTI, 1 
+21:  HALT
