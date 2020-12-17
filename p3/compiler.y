@@ -23,10 +23,17 @@ char* nou_temporal();
 char *temp_sq;
 void emet_calculation(sym_value_type *s0, sym_value_type s1, sym_value_type s2, const char* oper);
 void emet_salto_condicional(sym_value_type s1, const char* operel, sym_value_type s2, char* line2jump);
+ArrayList crea_lista(int num);
+ArrayList fusiona(ArrayList l1, ArrayList l2);
+void completa(ArrayList lista, int num);
 %}
 
 %code requires {
 	#include "symtab.h"
+	typedef struct {
+		int *lista;
+		int size;
+	}ArrayList;
 }
 
 
@@ -35,7 +42,12 @@ void emet_salto_condicional(sym_value_type s1, const char* operel, sym_value_typ
 		char *nom;		
 		sym_value_type value;
 	}variable;
-	sym_value_type expr;
+	struct {
+		ArrayList llf;
+		ArrayList llc;
+		sym_value_type value;
+	}expr;
+	ArrayList sent;
 	char *cadena;
 }
 
@@ -47,6 +59,8 @@ void emet_salto_condicional(sym_value_type s1, const char* operel, sym_value_typ
 
 %type <variable> id
 
+%type <sent> sentencia sentencia_simple sentencias_iterativas sentencia_iterativa_incondicional
+
 %%
 
 programa: lista_sentencias {print_sentences();};
@@ -57,9 +71,9 @@ sentencia: sentencia_simple | sentencias_iterativas;
 
 sentencia_simple:  FIN_SENTENCIA| asignacion FIN_SENTENCIA | procedimientos FIN_SENTENCIA;
 
-asignacion : id ASSIGN expresion { $1.value = $3;
+asignacion : id ASSIGN expresion { $1.value = $3.value;
 				  sym_enter($1.nom, &$1.value);
-				  emet(3, $1.nom, ":=", $3.lloc);}
+				  emet(3, $1.nom, ":=", $3.value.lloc);}
 ;
 
 id: ID | ID_ARITM;
@@ -68,72 +82,72 @@ id: ID | ID_ARITM;
 expresion: expresion_aritmetica | expresion_bool;
 
 expresion_aritmetica: operacion_aritm_prec1 | 
-		expresion_aritmetica SUM operacion_aritm_prec1 { emet_calculation(&$$, $1, $3, "ADD");}|
-		expresion_aritmetica REST operacion_aritm_prec1 { emet_calculation(&$$, $1, $3, "SUB");}|
+		expresion_aritmetica SUM operacion_aritm_prec1 { emet_calculation(&($$.value), $1.value, $3.value, "ADD");}|
+		expresion_aritmetica REST operacion_aritm_prec1 { emet_calculation(&($$.value), $1.value, $3.value, "SUB");}|
 		SUM operacion_aritm_prec1 {$$=$2;}|			
 		REST operacion_aritm_prec1 {
-			$$.lloc = nou_temporal();
-			$$.tipo = $2.tipo;
-			if ($2.tipo==entero) emet(4, $$.lloc, ":=", "CHSI", $2.lloc);
-			else emet(4, $$.lloc, ":=", "CHSF", $2.lloc);
+			$$.value.lloc = nou_temporal();
+			$$.value.tipo = $2.value.tipo;
+			if ($2.value.tipo==entero) emet(4, $$.value.lloc, ":=", "CHSI", $2.value.lloc);
+			else emet(4, $$.value.lloc, ":=", "CHSF", $2.value.lloc);
 }
 ;
 
 
 operacion_aritm_prec1: 	operacion_aritm_prec2 | 
-		operacion_aritm_prec1 MUL operacion_aritm_prec2 {emet_calculation(&$$, $1, $3, "MUL");}|
+		operacion_aritm_prec1 MUL operacion_aritm_prec2 {emet_calculation(&($$.value), $1.value, $3.value, "MUL");}|
 		operacion_aritm_prec1 DIV operacion_aritm_prec2 {
-		if (($3.tipo==entero && atoi($3.lloc)==0) || ($3.tipo==real && atof($3.lloc)==0)){
+		if (($3.value.tipo==entero && atoi($3.value.lloc)==0) || ($3.value.tipo==real && atof($3.value.lloc)==0)){
 			yyerror("No se puede dividir entre 0");
 		}	
 		else {	
-			emet_calculation(&$$, $1, $3, "DIV");
+			emet_calculation(&($$.value), $1.value, $3.value, "DIV");
 		}
 }|
 		operacion_aritm_prec1 MOD operacion_aritm_prec2 {
-		if ($1.tipo==entero && $3.tipo==entero){
-			emet_calculation(&$$, $1, $3, "MOD");
+		if ($1.value.tipo==entero && $3.value.tipo==entero){
+			emet_calculation(&($$.value), $1.value, $3.value, "MOD");
 		}
 		else yyerror("Solo se puede obtener el modulo entre números ENTEROS");
 }
 ;
 
 operacion_aritm_prec2: operacion_aritm_base | operacion_aritm_prec2 POTENCIA operacion_aritm_base {
-		if ($3.tipo==entero){
-			int exponente = atoi($3.lloc);
+		if ($3.value.tipo==entero){
+			int exponente = atoi($3.value.lloc);
 			sym_value_type temp, result;
-			temp.lloc = (char*)malloc(sizeof(char)*strlen($1.lloc)+2);
-			strcpy(temp.lloc, $1.lloc);
-			temp.tipo = $1.tipo;
+			temp.lloc = (char*)malloc(sizeof(char)*strlen($1.value.lloc)+2);
+			strcpy(temp.lloc, $1.value.lloc);
+			temp.tipo = $1.value.tipo;
 			int i;
 			for (i=0; i < exponente; i++){
 				result.lloc=nou_temporal();
-				emet_calculation(&result, $1, temp, "MUL");
+				emet_calculation(&result, $1.value, temp, "MUL");
 				strcpy(temp.lloc, result.lloc);
 			}	
-			$$ = result;
+			$$.value = result;
 		} else yyerror("OPERACION NO DISPONIBLE.");	
 };
 
 
 operacion_aritm_base: ABRIR_PAR expresion_aritmetica CERRAR_PAR { $$=$2;} |
-	   INTEGER { $$.tipo=entero; $$.lloc=$1;}|
-	   REAL { $$.tipo=real; $$.lloc=$1;} |
-	   ID_ARITM {sym_lookup($1.nom, &$1.value); $$.tipo=$1.value.tipo; $$.lloc=$1.nom; }
+	   INTEGER { $$.value.tipo=entero; $$.value.lloc=$1;}|
+	   REAL { $$.value.tipo=real; $$.value.lloc=$1;} |
+	   ID_ARITM {sym_lookup($1.nom, &$1.value); $$.value.tipo=$1.value.tipo; $$.value.lloc=$1.nom; }
 ;
 
 expresion_bool: operacion_boolean_prec1 | 
-		expresion_bool OR operacion_boolean_prec1; 
+		expresion_bool OR M operacion_boolean_prec1; 
 
 operacion_boolean_prec1: operacion_boolean_prec2 |
-		operacion_boolean_prec1 AND operacion_boolean_prec2 ; 
+		operacion_boolean_prec1 AND operacion_boolean_prec2; 
 
 operacion_boolean_prec2: operacion_boolean_base | 
 		NEG operacion_boolean_prec2; 
 
 operacion_boolean_base: ABRIR_PAR expresion_bool CERRAR_PAR { $$=$2;} | operacion_boolean_con_aritm |
-	   BOOLEAN { $$.tipo=boolean; $$.lloc=$1;} |
-	   ID_BOOL { sym_lookup($1.nom, &$1.value); $$.tipo=$1.value.tipo; $$.lloc=$1.nom;}
+	   BOOLEAN { $$.value.tipo=boolean; $$.value.lloc=$1;} |
+	   ID_BOOL { sym_lookup($1.nom, &$1.value); $$.value.tipo=$1.value.tipo; $$.value.lloc=$1.nom;}
 ;
 
 
@@ -148,18 +162,18 @@ operacion_boolean_con_aritm: expresion_aritmetica GT expresion_aritmetica|
 sentencias_iterativas: sentencia_iterativa_incondicional; /*Habrá que añadir más en la P3*/
 
 sentencia_iterativa_incondicional: REPEAT expresion_aritmetica M DO lista_sentencias DONE {
-	if ($3.tipo==entero) emet(5, $3.lloc, ":=", $3.lloc, "ADDI", "1");
-	else if ($3.tipo==real) emet(5, $3.lloc, ":=", $3.lloc, "ADDF", "1");
+	if ($3.value.tipo==entero) emet(5, $3.value.lloc, ":=", $3.value.lloc, "ADDI", "1");
+	else if ($3.value.tipo==real) emet(5, $3.value.lloc, ":=", $3.value.lloc, "ADDF", "1");
 	else yyerror("Bad request");
-	emet_salto_condicional($3, "LT", $2, temp_sq);
+	emet_salto_condicional($3.value, "LT", $2.value, temp_sq);
 };
 
 
 /* M contendrá la información del contador del bucle y guardará la línea donde empieza el bucle*/
-M : {$$.lloc = malloc(sizeof(char)*5);
-     $$.tipo = entero; /*Un contador siempre es un entero*/
-     strcpy($$.lloc, nou_temporal());
-     emet(3, $$.lloc, ":=", "0");
+M : {$$.value.lloc = malloc(sizeof(char)*5);
+     $$.value.tipo = entero; /*Un contador siempre es un entero*/
+     strcpy($$.value.lloc, nou_temporal());
+     emet(3, $$.value.lloc, ":=", "0");
      temp_sq = malloc(sizeof(char)*5);
      sprintf(temp_sq, "%d", sq);     
 };
@@ -184,6 +198,38 @@ void print_sentences(){
 	fprintf(yyout, "%d:  %s\n", i, matriz_sentencias[i]);
    fprintf(yyout, "%d:  HALT\n", sq);
 
+}
+
+ArrayList crea_lista(int num){
+   ArrayList temp;
+   temp.lista = malloc(YYLMAX*sizeof(int));
+   temp.size = 1;
+   return temp;
+}
+
+ArrayList fusiona(ArrayList l1, ArrayList l2){
+  ArrayList temp;
+  temp.lista = malloc(YYLMAX*sizeof(int));
+  int i;
+  for (i=0; i < l1.size; i++){
+	temp.lista[i]=l1.lista[i];
+  }
+
+  for (i=0; i < l2.size; i++){
+	temp.lista[i]=l2.lista[i];
+  }
+
+  temp.size = l1.size + l2.size;
+  return temp;
+}
+
+void completa(ArrayList lista, int num){
+  int i;
+  char* num_buffer = malloc(sizeof(char)*5);
+  sprintf(num_buffer, "%d", num);
+  for (i=0; i < lista.size; i++){
+	strcat(matriz_sentencias[lista.lista[i]],num_buffer);
+  }
 }
 
 
