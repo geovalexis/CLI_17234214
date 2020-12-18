@@ -20,7 +20,6 @@ int sq=1; /*siguiente squat (linea)*/
 void emet(int args_count, ...);
 int st=1; /*siguiente temporal*/
 char* nou_temporal();
-char *temp_sq;
 void emet_calculation(sym_value_type *s0, sym_value_type s1, sym_value_type s2, const char* oper);
 void emet_salto_condicional(sym_value_type s1, const char* operel, sym_value_type s2, char* line2jump);
 ArrayList crea_lista(int num);
@@ -49,18 +48,20 @@ void completa(ArrayList lista, int num);
 	}expr;
 	ArrayList sent;
 	char *cadena;
+	int entero;
 }
 
 %token <variable> ID ID_ARITM ID_BOOL
 %token <cadena> INTEGER REAL BOOLEAN
 %token ASSIGN POTENCIA SUM REST MUL DIV MOD AND NEG OR FIN_SENTENCIA ABRIR_PAR CERRAR_PAR GT LT GE LE EQ NE BOOL_TRUE BOOL_FALSE REPEAT DO DONE
 
-%type <expr> expresion expresion_aritmetica  operacion_aritm_base operacion_aritm_prec1 operacion_aritm_prec2 M expresion_bool operacion_boolean_con_aritm operacion_boolean_prec1 operacion_boolean_prec2 operacion_boolean_base
+%type <expr> expresion expresion_aritmetica  operacion_aritm_base operacion_aritm_prec1 operacion_aritm_prec2 P expresion_bool operacion_boolean_con_aritm operacion_boolean_prec1 operacion_boolean_prec2 operacion_boolean_base
 
 %type <variable> id
 
 %type <sent> sentencia sentencia_simple sentencias_iterativas sentencia_iterativa_incondicional
 
+%type <entero> M
 %%
 
 programa: lista_sentencias {print_sentences();};
@@ -143,7 +144,7 @@ operacion_boolean_prec1: operacion_boolean_prec2 |
 		operacion_boolean_prec1 AND operacion_boolean_prec2; 
 
 operacion_boolean_prec2: operacion_boolean_base | 
-		NEG operacion_boolean_prec2; 
+		NEG operacion_boolean_prec2 {$$=$2;}; 
 
 operacion_boolean_base: ABRIR_PAR expresion_bool CERRAR_PAR { $$=$2;} | operacion_boolean_con_aritm |
 	   BOOLEAN { $$.value.tipo=boolean; $$.value.lloc=$1;} |
@@ -161,22 +162,29 @@ operacion_boolean_con_aritm: expresion_aritmetica GT expresion_aritmetica|
 
 sentencias_iterativas: sentencia_iterativa_incondicional; /*Habrá que añadir más en la P3*/
 
-sentencia_iterativa_incondicional: REPEAT expresion_aritmetica M DO lista_sentencias DONE {
+sentencia_iterativa_incondicional: REPEAT expresion_aritmetica P M DO lista_sentencias DONE {
 	if ($3.value.tipo==entero) emet(5, $3.value.lloc, ":=", $3.value.lloc, "ADDI", "1");
 	else if ($3.value.tipo==real) emet(5, $3.value.lloc, ":=", $3.value.lloc, "ADDF", "1");
 	else yyerror("Bad request");
+	char *temp_sq = malloc(sizeof(char)*5);
+        sprintf(temp_sq, "%d", $4);     
 	emet_salto_condicional($3.value, "LT", $2.value, temp_sq);
 };
 
 
-/* M contendrá la información del contador del bucle y guardará la línea donde empieza el bucle*/
-M : {$$.value.lloc = malloc(sizeof(char)*5);
+/* Guarda el quat actual */
+M: {
+   $$=sq;
+};
+
+/* P contendrá la información del contador del bucle*/
+P : {$$.value.lloc = malloc(sizeof(char)*5);
      $$.value.tipo = entero; /*Un contador siempre es un entero*/
      strcpy($$.value.lloc, nou_temporal());
      emet(3, $$.value.lloc, ":=", "0");
-     temp_sq = malloc(sizeof(char)*5);
-     sprintf(temp_sq, "%d", sq);     
 };
+
+
 
 procedimientos: put;
 
