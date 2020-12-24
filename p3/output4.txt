@@ -1,0 +1,13 @@
+1:  i := 1 
+2:  $t01 := 0 MULI 1 
+3:  $t02 := I2F $t01 
+4:  $t03 := 1.0 ADDF $t02 
+5:  $t04 := I2F i 
+6:  $t05 := $t03 SUBF $t04 
+7:  total := $t05 
+8:  IF i EQI 1 GOTO  10
+9:  GOTO 13
+10:  $t06 := I2F 2 
+11:  $t07 := total MULF $t06 
+12:  total := $t07 
+13:  HALT

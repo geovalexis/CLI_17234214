@@ -1,0 +1,6 @@
+// nested sentences
+i := 1
+total := (1.0 + 0 * 1) - i
+if (i = 1) then
+   total := total * 2
+fi
