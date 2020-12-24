@@ -48,6 +48,7 @@ cerrar_par ")"
 						strncpy(yylval.cadena,yytext,yyleng+1); 
 						return REAL;}
 
+
  /* EXPRESIONES ARITMETICAS */ 			
 {suma} {return SUM;}
 
@@ -91,10 +92,18 @@ cerrar_par ")"
 
  /*SENTENCIAS ITERATIVAS */
 "repeat" {return REPEAT;};
-
+"while" {return WHILE;};
+"for" {return FOR;};
+"in" {return IN;};
 "do" {return DO;};
-
+"until" {return UNTIL;};
 "done" {return DONE;};
+
+ /* SENTENCIAS CONDICIONALES */
+"if" {return IF;};
+"then" {return THEN;};
+"else" {return ELSE;};
+"fi" {return FI;};
 
  /* COMENTARIOS */
 {comentario_linea}(.)*{linebreak}  {}

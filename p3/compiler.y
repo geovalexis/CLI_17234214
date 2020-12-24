@@ -56,13 +56,13 @@ void completa(ArrayList lista, int num);
 %token <variable> ID ID_ARITM ID_BOOL
 %token <cadena> INTEGER REAL 
 %token <expr> BOOLEAN_TRUE BOOLEAN_FALSE
-%token ASSIGN POTENCIA SUM REST MUL DIV MOD AND NEG OR FIN_SENTENCIA ABRIR_PAR CERRAR_PAR GT LT GE LE EQ NE BOOL_TRUE BOOL_FALSE REPEAT DO DONE
+%token ASSIGN POTENCIA SUM REST MUL DIV MOD AND NEG OR FIN_SENTENCIA ABRIR_PAR CERRAR_PAR GT LT GE LE EQ NE BOOL_TRUE BOOL_FALSE REPEAT WHILE FOR IN DO UNTIL DONE IF THEN ELSE FI
 
 %type <expr> expresion expresion_aritmetica  operacion_aritm_base operacion_aritm_prec1 operacion_aritm_prec2 P expresion_bool operacion_boolean_prec1 operacion_boolean_prec2 operacion_boolean_base
 
 %type <variable> id
 
-%type <sent> sentencia sentencia_simple sentencias_iterativas sentencia_iterativa_incondicional
+%type <sent> Q lista_sentencias sentencia sentencia_simple sentencias_iterativas sentencias_condicionales sentencia_iterativa_incondicional
 
 %type <entero> M
 %type <cadena> operel
@@ -70,18 +70,23 @@ void completa(ArrayList lista, int num);
 
 programa: lista_sentencias {print_sentences();};
 
-lista_sentencias : lista_sentencias sentencia | sentencia;
+lista_sentencias : lista_sentencias M sentencia {
+	   completa($1, $2);
+	   $$ = $3;
+}| sentencia;
 
-sentencia: sentencia_simple | sentencias_iterativas;
+sentencia: sentencia_simple | sentencias_iterativas | sentencias_condicionales;
 
-sentencia_simple:  FIN_SENTENCIA| asignacion FIN_SENTENCIA | procedimientos FIN_SENTENCIA;
+sentencia_simple:  Q FIN_SENTENCIA| Q asignacion FIN_SENTENCIA | Q procedimientos FIN_SENTENCIA;
+
+Q: {ArrayList null_list; null_list.size=0; $$=null_list;};
 
 asignacion : id ASSIGN expresion { $1.value = $3.value;
 				  sym_enter($1.nom, &$1.value);
 				  emet(3, $1.nom, ":=", $3.value.lloc);}
 ;
 
-id: ID | ID_ARITM;
+id: ID | ID_ARITM | ID_BOOL;
 
 
 expresion: expresion_aritmetica | expresion_bool;
@@ -191,6 +196,11 @@ sentencia_iterativa_incondicional: REPEAT expresion_aritmetica P M DO lista_sent
 };
 
 
+sentencias_condicionales: IF expresion_bool THEN M lista_sentencias FI {
+	completa($2.llc, $4);
+	$$=fusiona($2.llf, $5);
+};
+
 /* Guarda el quat actual */
 M: {
    $$=sq;
@@ -230,6 +240,7 @@ void print_sentences(){
 ArrayList crea_lista(int num){
    ArrayList temp;
    temp.lista = malloc(YYLMAX*sizeof(int));
+   temp.lista[0]=num;
    temp.size = 1;
    return temp;
 }
@@ -241,9 +252,10 @@ ArrayList fusiona(ArrayList l1, ArrayList l2){
   for (i=0; i < l1.size; i++){
 	temp.lista[i]=l1.lista[i];
   }
-
-  for (i=0; i < l2.size; i++){
-	temp.lista[i]=l2.lista[i];
+  int j;
+  for (j=0; i < l2.size; j++){
+	temp.lista[i]=l2.lista[j];
+        i++;
   }
 
   temp.size = l1.size + l2.size;
