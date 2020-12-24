@@ -38,7 +38,9 @@ void completa(ArrayList lista, int num);
 
 %union{
 	struct{
-		char *nom;		
+		char *nom;
+		ArrayList llf;
+		ArrayList llc;		
 		sym_value_type value;
 	}variable;
 	struct {
@@ -52,16 +54,18 @@ void completa(ArrayList lista, int num);
 }
 
 %token <variable> ID ID_ARITM ID_BOOL
-%token <cadena> INTEGER REAL BOOLEAN
+%token <cadena> INTEGER REAL 
+%token <expr> BOOLEAN_TRUE BOOLEAN_FALSE
 %token ASSIGN POTENCIA SUM REST MUL DIV MOD AND NEG OR FIN_SENTENCIA ABRIR_PAR CERRAR_PAR GT LT GE LE EQ NE BOOL_TRUE BOOL_FALSE REPEAT DO DONE
 
-%type <expr> expresion expresion_aritmetica  operacion_aritm_base operacion_aritm_prec1 operacion_aritm_prec2 P expresion_bool operacion_boolean_con_aritm operacion_boolean_prec1 operacion_boolean_prec2 operacion_boolean_base
+%type <expr> expresion expresion_aritmetica  operacion_aritm_base operacion_aritm_prec1 operacion_aritm_prec2 P expresion_bool operacion_boolean_prec1 operacion_boolean_prec2 operacion_boolean_base
 
 %type <variable> id
 
 %type <sent> sentencia sentencia_simple sentencias_iterativas sentencia_iterativa_incondicional
 
 %type <entero> M
+%type <cadena> operel
 %%
 
 programa: lista_sentencias {print_sentences();};
@@ -138,27 +142,42 @@ operacion_aritm_base: ABRIR_PAR expresion_aritmetica CERRAR_PAR { $$=$2;} |
 ;
 
 expresion_bool: operacion_boolean_prec1 | 
-		expresion_bool OR M operacion_boolean_prec1; 
+		expresion_bool OR M operacion_boolean_prec1 {
+		completa($1.llf, $3);
+		$$.llc = fusiona($1.llc, $4.llc);
+		$$.llf = $4.llf;
+}; 
 
 operacion_boolean_prec1: operacion_boolean_prec2 |
-		operacion_boolean_prec1 AND operacion_boolean_prec2; 
+		operacion_boolean_prec1 AND M operacion_boolean_prec2 {
+		completa($1.llc, $3);
+		$$.llc = $4.llc;
+		$$.llf = fusiona($1.llf, $4.llf);
+}; 
 
 operacion_boolean_prec2: operacion_boolean_base | 
-		NEG operacion_boolean_prec2 {$$=$2;}; 
+		NEG operacion_boolean_prec2 {
+		$$.llc=$2.llf;
+		$$.llf=$2.llc;
+}; 
 
-operacion_boolean_base: ABRIR_PAR expresion_bool CERRAR_PAR { $$=$2;} | operacion_boolean_con_aritm |
-	   BOOLEAN { $$.value.tipo=boolean; $$.value.lloc=$1;} |
+operacion_boolean_base: ABRIR_PAR expresion_bool CERRAR_PAR { $$=$2;} | 
+	   expresion_aritmetica operel expresion_aritmetica {
+	   $$.llc = crea_lista(sq);
+	   emet_salto_condicional($1.value, $2, $3.value, "");
+	   $$.llf = crea_lista(sq);
+	   emet(1, "GOTO");
+}|
+	   BOOLEAN_TRUE { 
+	   $$.llc = crea_lista(sq); emet(1, "GOTO");
+}|
+	   BOOLEAN_FALSE {
+	   $$.llf = crea_lista(sq); emet(1, "GOTO");
+}|	
 	   ID_BOOL { sym_lookup($1.nom, &$1.value); $$.value.tipo=$1.value.tipo; $$.value.lloc=$1.nom;}
 ;
 
-
-operacion_boolean_con_aritm: expresion_aritmetica GT expresion_aritmetica|
-		expresion_aritmetica LT expresion_aritmetica |
-		expresion_aritmetica GE expresion_aritmetica |
-		expresion_aritmetica LE expresion_aritmetica |
-		expresion_aritmetica EQ expresion_aritmetica |
-		expresion_aritmetica NE expresion_aritmetica;
-
+operel: GT {$$="GT";} | LT {$$="LT";} | GE {$$="GE";} | LE {$$="LE";} | EQ {$$="EQ";} | NE {$$="NE";};
 
 sentencias_iterativas: sentencia_iterativa_incondicional; /*Habrá que añadir más en la P3*/
 

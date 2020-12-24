@@ -79,15 +79,17 @@ cerrar_par ")"
 "or"  {return OR;}
 
  /* LITERALES BOOLEANOS */
-"true" 	{yylval.cadena = (char *)malloc(sizeof(char)*yyleng+1);
-	strncpy(yylval.cadena,yytext,yyleng+1); 
-	return BOOLEAN;}
-"false" {yylval.cadena = (char *)malloc(sizeof(char)*yyleng+1);
-	strncpy(yylval.cadena,yytext,yyleng+1); 
-	return BOOLEAN;}
+"true" 	{yylval.expr.value.lloc = (char *)malloc(sizeof(char)*yyleng+1);
+        yylval.expr.value.tipo = boolean;
+	strncpy(yylval.expr.value.lloc,yytext,yyleng+1); 
+	return BOOLEAN_TRUE;}
+
+"false" {yylval.expr.value.lloc = (char *)malloc(sizeof(char)*yyleng+1);
+        yylval.expr.value.tipo = boolean;
+	strncpy(yylval.expr.value.lloc,yytext,yyleng+1); 
+	return BOOLEAN_FALSE;}
 
  /*SENTENCIAS ITERATIVAS */
-
 "repeat" {return REPEAT;};
 
 "do" {return DO;};
