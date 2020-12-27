@@ -10,4 +10,9 @@
 10:  $t06 := I2F 2 
 11:  $t07 := total MULF $t06 
 12:  total := $t07 
-13:  HALT
+13:  GOTO 
+14:  x := true 
+15:  IF 3 GTI 5 GOTO  
+16:  GOTO 
+17:  y := x 
+18:  HALT

@@ -38,9 +38,7 @@ void completa(ArrayList lista, int num);
 
 %union{
 	struct{
-		char *nom;
-		ArrayList llf;
-		ArrayList llc;		
+		char *nom;	
 		sym_value_type value;
 	}variable;
 	struct {
@@ -56,16 +54,17 @@ void completa(ArrayList lista, int num);
 %token <variable> ID ID_ARITM ID_BOOL
 %token <cadena> INTEGER REAL 
 %token <expr> BOOLEAN_TRUE BOOLEAN_FALSE
-%token ASSIGN POTENCIA SUM REST MUL DIV MOD AND NEG OR FIN_SENTENCIA ABRIR_PAR CERRAR_PAR GT LT GE LE EQ NE BOOL_TRUE BOOL_FALSE REPEAT WHILE FOR IN DO UNTIL DONE IF THEN ELSE FI
+%token <sent> FIN_SENTENCIA
+%token ASSIGN POTENCIA SUM REST MUL DIV MOD AND NEG OR ABRIR_PAR CERRAR_PAR GT LT GE LE EQ NE BOOL_TRUE BOOL_FALSE REPEAT WHILE FOR IN DO UNTIL DONE IF THEN ELSE FI
 
 %type <expr> expresion expresion_aritmetica  operacion_aritm_base operacion_aritm_prec1 operacion_aritm_prec2 P expresion_bool operacion_boolean_prec1 operacion_boolean_prec2 operacion_boolean_base
 
+%type <sent> lista_sentencias sentencia sentencia_simple sentencias_iterativas sentencias_condicionales sentencia_iterativa_incondicional
+
+%type <cadena> operel
+%type <entero> M
 %type <variable> id
 
-%type <sent> Q lista_sentencias sentencia sentencia_simple sentencias_iterativas sentencias_condicionales sentencia_iterativa_incondicional
-
-%type <entero> M
-%type <cadena> operel
 %%
 
 programa: lista_sentencias {print_sentences();};
@@ -77,9 +76,7 @@ lista_sentencias : lista_sentencias M sentencia {
 
 sentencia: sentencia_simple | sentencias_iterativas | sentencias_condicionales;
 
-sentencia_simple:  Q FIN_SENTENCIA| Q asignacion FIN_SENTENCIA | Q procedimientos FIN_SENTENCIA;
-
-Q: {ArrayList null_list; null_list.size=0; $$=null_list;};
+sentencia_simple:  FIN_SENTENCIA| asignacion FIN_SENTENCIA {$$=$2;}| procedimientos FIN_SENTENCIA {$$=$2;};
 
 asignacion : id ASSIGN expresion { $1.value = $3.value;
 				  sym_enter($1.nom, &$1.value);
