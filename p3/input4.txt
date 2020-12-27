@@ -3,9 +3,11 @@ i := 1
 total := (1.0 + 0 * 1) - i
 if (i = 1) then
    total := total * 2
+else
+   total := total - 1
 fi
 
 // Las siguientes sentencias no las hace correctamente porque en la declaracion de operaciones relaciones siempre aparece un IF
-x := true
-y := ( x or ( 3 > 5 ) )
+//x := true
+//y := ( x or ( 3 > 5 ) )
 

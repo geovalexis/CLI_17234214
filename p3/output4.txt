@@ -6,13 +6,12 @@
 6:  $t05 := $t03 SUBF $t04 
 7:  total := $t05 
 8:  IF i EQI 1 GOTO  10
-9:  GOTO 13
+9:  GOTO 14
 10:  $t06 := I2F 2 
 11:  $t07 := total MULF $t06 
 12:  total := $t07 
-13:  GOTO 
-14:  x := true 
-15:  IF 3 GTI 5 GOTO  
-16:  GOTO 
-17:  y := x 
-18:  HALT
+13:  GOTO 17
+14:  $t08 := I2F 1 
+15:  $t09 := total SUBF $t08 
+16:  total := $t09 
+17:  HALT

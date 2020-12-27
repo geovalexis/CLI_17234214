@@ -59,7 +59,7 @@ void completa(ArrayList lista, int num);
 
 %type <expr> expresion expresion_aritmetica  operacion_aritm_base operacion_aritm_prec1 operacion_aritm_prec2 P expresion_bool operacion_boolean_prec1 operacion_boolean_prec2 operacion_boolean_base
 
-%type <sent> lista_sentencias sentencia sentencia_simple sentencias_iterativas sentencias_condicionales sentencia_iterativa_incondicional
+%type <sent> N lista_sentencias sentencia sentencia_simple sentencias_iterativas sentencias_condicionales sentencia_iterativa_incondicional
 
 %type <cadena> operel
 %type <entero> M
@@ -196,12 +196,22 @@ sentencia_iterativa_incondicional: REPEAT expresion_aritmetica P M DO lista_sent
 sentencias_condicionales: IF expresion_bool THEN M lista_sentencias FI {
 	completa($2.llc, $4);
 	$$=fusiona($2.llf, $5);
+}| 
+	IF expresion_bool THEN M lista_sentencias ELSE N M lista_sentencias FI{
+	completa($2.llc, $4);
+	completa($2.llf, $8);
+	$$=fusiona($5, fusiona($7, $9));
 };
 
 /* Guarda el quat actual */
 M: {
    $$=sq;
 };
+
+N: {
+   $$=crea_lista(sq);
+   emet(1, "GOTO");
+}
 
 /* P contendrá la información del contador del bucle*/
 P : {$$.value.lloc = malloc(sizeof(char)*5);
