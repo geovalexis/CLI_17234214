@@ -59,7 +59,7 @@ void completa(ArrayList lista, int num);
 
 %type <expr> expresion expresion_aritmetica  operacion_aritm_base operacion_aritm_prec1 operacion_aritm_prec2 P expresion_bool operacion_boolean_prec1 operacion_boolean_prec2 operacion_boolean_base
 
-%type <sent> N lista_sentencias sentencia sentencia_simple sentencias_iterativas sentencias_condicionales sentencia_iterativa_incondicional
+%type <sent> N lista_sentencias sentencia sentencia_simple sentencias_iterativas sentencias_condicionales sentencia_iterativa_incondicional sentencia_iterativa_condicional
 
 %type <cadena> operel
 %type <entero> M
@@ -181,17 +181,25 @@ operacion_boolean_base: ABRIR_PAR expresion_bool CERRAR_PAR { $$=$2;} |
 
 operel: GT {$$="GT";} | LT {$$="LT";} | GE {$$="GE";} | LE {$$="LE";} | EQ {$$="EQ";} | NE {$$="NE";};
 
-sentencias_iterativas: sentencia_iterativa_incondicional; /*Habrá que añadir más en la P3*/
+sentencias_iterativas: sentencia_iterativa_incondicional | sentencia_iterativa_condicional;
 
 sentencia_iterativa_incondicional: REPEAT expresion_aritmetica P M DO lista_sentencias DONE {
 	if ($3.value.tipo==entero) emet(5, $3.value.lloc, ":=", $3.value.lloc, "ADDI", "1");
 	else if ($3.value.tipo==real) emet(5, $3.value.lloc, ":=", $3.value.lloc, "ADDF", "1");
 	else yyerror("Bad request");
 	char *temp_sq = malloc(sizeof(char)*5);
-        sprintf(temp_sq, "%d", $4);     
+    sprintf(temp_sq, "%d", $4);     
 	emet_salto_condicional($3.value, "LT", $2.value, temp_sq);
 };
 
+sentencia_iterativa_condicional: WHILE M expresion_bool DO M lista_sentencias DONE {
+	completa($3.llc, $5);
+	completa($6, $2);
+	$$= $3.llf;
+	char *m_buffer = malloc(sizeof(char)*5);
+    sprintf(m_buffer, "%d", $2); 
+	emet(2, "GOTO", m_buffer);
+};
 
 sentencias_condicionales: IF expresion_bool THEN M lista_sentencias FI {
 	completa($2.llc, $4);

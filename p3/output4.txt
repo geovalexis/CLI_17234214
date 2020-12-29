@@ -5,13 +5,21 @@
 5:  $t04 := I2F i 
 6:  $t05 := $t03 SUBF $t04 
 7:  total := $t05 
-8:  IF i EQI 1 GOTO  10
-9:  GOTO 14
-10:  $t06 := I2F 2 
-11:  $t07 := total MULF $t06 
-12:  total := $t07 
-13:  GOTO 17
-14:  $t08 := I2F 1 
-15:  $t09 := total SUBF $t08 
-16:  total := $t09 
-17:  HALT
+8:  IF total LTF 1000.0 GOTO  10
+9:  GOTO 25
+10:  IF i EQI 1 GOTO  12
+11:  GOTO 16
+12:  $t06 := I2F 2 
+13:  $t07 := total MULF $t06 
+14:  total := $t07 
+15:  GOTO 19
+16:  $t08 := I2F 1 
+17:  $t09 := total SUBF $t08 
+18:  total := $t09 
+19:  $t010 := CHSI i 
+20:  i := $t010 
+21:  IF total GTF 666.6 GOTO  23
+22:  GOTO 24
+23:  i := 111 
+24:  GOTO 8 
+25:  HALT
