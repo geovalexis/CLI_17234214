@@ -1,17 +1,10 @@
 // nested sentences
 i := 1
 total := (1.0 + 0 * 1) - i
-while total < 1000.0 do
-	if (i = 1) then
-	   total := total * 2
-	else
-	   total := total - 1
-	fi
-	i := -i
-	if total > 666.6 then
-		i := 111
-	fi
-done
+if total > 666.6 or total = 500.0 then
+	i := 111
+fi
+
 
 // Las siguientes sentencias no las hace correctamente porque en la declaracion de operaciones relaciones siempre aparece un IF
 //x := true

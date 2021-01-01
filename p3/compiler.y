@@ -266,10 +266,12 @@ ArrayList fusiona(ArrayList l1, ArrayList l2){
   int i;
   for (i=0; i < l1.size; i++){
 	temp.lista[i]=l1.lista[i];
+	/* TO_DELETE fprintf(yyout, "Añadido num %d de lista 1\n", l1.lista[i]);*/
   }
   int j;
-  for (j=0; i < l2.size; j++){
+  for (j=0; j < l2.size; j++){
 	temp.lista[i]=l2.lista[j];
+	/* TO_DELETE fprintf(yyout, "Añadido num %d de lista 2\n", l2.lista[j]);*/
         i++;
   }
 
