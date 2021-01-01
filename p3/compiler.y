@@ -199,6 +199,9 @@ sentencia_iterativa_condicional: WHILE M expresion_bool DO M lista_sentencias DO
 	char *m_buffer = malloc(sizeof(char)*5);
     sprintf(m_buffer, "%d", $2); 
 	emet(2, "GOTO", m_buffer);
+}| DO M lista_sentencias UNTIL expresion_bool {
+	completa($5.llc, $2);
+	$$= $5.llf;			
 };
 
 sentencias_condicionales: IF expresion_bool THEN M lista_sentencias FI {
@@ -216,6 +219,7 @@ M: {
    $$=sq;
 };
 
+/* Crea lista de siguientes */
 N: {
    $$=crea_lista(sq);
    emet(1, "GOTO");
