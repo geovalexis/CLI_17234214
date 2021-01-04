@@ -80,14 +80,14 @@ cerrar_par ")"
 "or"  {return OR;}
 
  /* LITERALES BOOLEANOS */
-"true" 	{yylval.expr.value.lloc = (char *)malloc(sizeof(char)*yyleng+1);
+"true" 	{yylval.expr.value.lloc = (char *)malloc(sizeof(char)*2);
         yylval.expr.value.tipo = boolean;
-	strncpy(yylval.expr.value.lloc,yytext,yyleng+1); 
+	strncpy(yylval.expr.value.lloc,"1",2); 
 	return BOOLEAN_TRUE;}
 
-"false" {yylval.expr.value.lloc = (char *)malloc(sizeof(char)*yyleng+1);
+"false" {yylval.expr.value.lloc = (char *)malloc(sizeof(char)*2);
         yylval.expr.value.tipo = boolean;
-	strncpy(yylval.expr.value.lloc,yytext,yyleng+1); 
+	strncpy(yylval.expr.value.lloc,"0",2); 
 	return BOOLEAN_FALSE;}
 
  /*SENTENCIAS ITERATIVAS */

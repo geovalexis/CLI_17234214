@@ -31,4 +31,6 @@
 31:  k := 4 
 32:  IF total LTF 1000.0 GOTO  29
 33:  GOTO 34
-34:  HALT
+34:  GOTO 
+35:  x := 1 
+36:  HALT
