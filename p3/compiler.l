@@ -80,15 +80,9 @@ cerrar_par ")"
 "or"  {return OR;}
 
  /* LITERALES BOOLEANOS */
-"true" 	{yylval.expr.value.lloc = (char *)malloc(sizeof(char)*2);
-        yylval.expr.value.tipo = boolean;
-	strncpy(yylval.expr.value.lloc,"1",2); 
-	return BOOLEAN_TRUE;}
+"true" 	{return BOOLEAN_TRUE;}
 
-"false" {yylval.expr.value.lloc = (char *)malloc(sizeof(char)*2);
-        yylval.expr.value.tipo = boolean;
-	strncpy(yylval.expr.value.lloc,"0",2); 
-	return BOOLEAN_FALSE;}
+"false" {return BOOLEAN_FALSE;}
 
  /*SENTENCIAS ITERATIVAS */
 "repeat" {return REPEAT;};
