@@ -95,6 +95,7 @@ cerrar_par ")"
 "while" {return WHILE;};
 "for" {return FOR;};
 "in" {return IN;};
+".." {return TO;};
 "do" {return DO;};
 "until" {return UNTIL;};
 "done" {return DONE;};

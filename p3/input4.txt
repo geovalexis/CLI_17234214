@@ -20,7 +20,12 @@ do
     k := 4
 until total < 1000.0
 
-x := true
+
+for i in 1..10 do
+	prova := 1
+done
+
+//x := true
 // Las siguientes sentencias no las hace correctamente porque en la declaracion de operaciones relaciones siempre aparece un IF
 //y := ( x or ( 3 > 5 ) )
 

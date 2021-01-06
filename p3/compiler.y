@@ -46,6 +46,11 @@ void completa(ArrayList lista, int num);
 		ArrayList llc;
 		sym_value_type value;
 	}expr;
+	struct {
+		int quad;
+		ArrayList lls;
+		char *lloc;
+	}all_data;
 	ArrayList sent;
 	char *cadena;
 	int entero;
@@ -55,16 +60,16 @@ void completa(ArrayList lista, int num);
 %token <cadena> INTEGER REAL 
 %token <expr> BOOLEAN_TRUE BOOLEAN_FALSE
 %token <sent> FIN_SENTENCIA
-%token ASSIGN POTENCIA SUM REST MUL DIV MOD AND NEG OR ABRIR_PAR CERRAR_PAR GT LT GE LE EQ NE BOOL_TRUE BOOL_FALSE REPEAT WHILE FOR IN DO UNTIL DONE IF THEN ELSE FI
+%token ASSIGN POTENCIA SUM REST MUL DIV MOD AND NEG OR ABRIR_PAR CERRAR_PAR GT LT GE LE EQ NE BOOL_TRUE BOOL_FALSE REPEAT WHILE FOR IN TO DO UNTIL DONE IF THEN ELSE FI
 
-%type <expr> expresion expresion_aritmetica  operacion_aritm_base operacion_aritm_prec1 operacion_aritm_prec2 P expresion_bool operacion_boolean_prec1 operacion_boolean_prec2 operacion_boolean_base
+%type <expr> expresion expresion_aritmetica  operacion_aritm_base operacion_aritm_prec1 operacion_aritm_prec2 expresion_bool operacion_boolean_prec1 operacion_boolean_prec2 operacion_boolean_base P R 
 
-%type <sent> N lista_sentencias sentencia sentencia_simple sentencias_iterativas sentencias_condicionales sentencia_iterativa_incondicional sentencia_iterativa_condicional
+%type <sent> N lista_sentencias sentencia sentencia_simple sentencias_iterativas sentencias_condicionales sentencia_iterativa_incondicional sentencia_iterativa_condicional sentencia_iterativa_indexada
 
 %type <cadena> operel
 %type <entero> M
 %type <variable> id
-
+%type <all_data> Q
 %%
 
 programa: lista_sentencias {print_sentences();};
@@ -181,9 +186,9 @@ operacion_boolean_base: ABRIR_PAR expresion_bool CERRAR_PAR { $$=$2;} |
 
 operel: GT {$$="GT";} | LT {$$="LT";} | GE {$$="GE";} | LE {$$="LE";} | EQ {$$="EQ";} | NE {$$="NE";};
 
-sentencias_iterativas: sentencia_iterativa_incondicional | sentencia_iterativa_condicional;
+sentencias_iterativas: sentencia_iterativa_incondicional | sentencia_iterativa_condicional | sentencia_iterativa_indexada;
 
-sentencia_iterativa_incondicional: REPEAT expresion_aritmetica P M DO lista_sentencias DONE {
+sentencia_iterativa_incondicional: REPEAT expresion_aritmetica R M DO lista_sentencias DONE {
 	if ($3.value.tipo==entero) emet(5, $3.value.lloc, ":=", $3.value.lloc, "ADDI", "1");
 	else if ($3.value.tipo==real) emet(5, $3.value.lloc, ":=", $3.value.lloc, "ADDF", "1");
 	else yyerror("Bad request");
@@ -202,6 +207,31 @@ sentencia_iterativa_condicional: WHILE M expresion_bool DO M lista_sentencias DO
 }| DO M lista_sentencias UNTIL expresion_bool {
 	completa($5.llc, $2);
 	$$= $5.llf;			
+};
+
+sentencia_iterativa_indexada: Q DO lista_sentencias DONE {
+	completa($3, sq);
+	emet(5,$1.lloc, ":=", $1.lloc, "+", "1");
+	char *quad_buffer = malloc(sizeof(char)*5);
+    sprintf(quad_buffer, "%d", $1.quad); 
+	emet(2, "GOTO", quad_buffer);
+	$$ = $1.lls;
+};
+
+Q: P TO expresion_aritmetica {
+	$$.quad = sq;
+	char *quad_buffer = malloc(sizeof(char)*5);
+    sprintf(quad_buffer, "%d", sq+2); 
+	emet_salto_condicional($1.value, "LE", $3.value, quad_buffer);
+	$$.lls = crea_lista(sq);
+	emet(1, "GOTO");
+	$$.lloc = $1.value.lloc;
+};
+
+P: FOR id IN expresion_aritmetica {
+	emet(3,$2.nom, ":=", $4.value.lloc);
+	$$.value.lloc = $2.nom;
+	$$.value.tipo = $4.value.tipo; /* La variable será del tipo de la expresion_aritmetica asignada*/
 };
 
 sentencias_condicionales: IF expresion_bool THEN M lista_sentencias FI {
@@ -223,15 +253,14 @@ M: {
 N: {
    $$=crea_lista(sq);
    emet(1, "GOTO");
-}
+};
 
-/* P contendrá la información del contador del bucle*/
-P : {$$.value.lloc = malloc(sizeof(char)*5);
+/* R contendrá la información del contador del bucle*/
+R: {$$.value.lloc = malloc(sizeof(char)*5);
      $$.value.tipo = entero; /*Un contador siempre es un entero*/
      strcpy($$.value.lloc, nou_temporal());
      emet(3, $$.value.lloc, ":=", "0");
 };
-
 
 
 procedimientos: put;

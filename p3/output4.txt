@@ -31,6 +31,10 @@
 31:  k := 4 
 32:  IF total LTF 1000.0 GOTO  29
 33:  GOTO 34
-34:  GOTO 
-35:  x := 1 
-36:  HALT
+34:  i := 1 
+35:  IF i LEI 10 GOTO 37 
+36:  GOTO 40
+37:  prova := 1 
+38:  i := i + 1 
+39:  GOTO 35 
+40:  HALT
