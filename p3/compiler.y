@@ -102,7 +102,6 @@ asignacion : id ASSIGN expresion_aritmetica {
 				if ($3.llc.size > 0) {
 					$1.value.lloc = "1";
 					completa($3.llc, sq);
-					fprintf(yyout, "Res: %d\n", sq);
 					emet(3, $1.nom, ":=", "1");
 					$$ = fusiona($$, crea_lista(sq)); /*fusiona() por si en el anterior if se ha añadido algo*/
 					emet(1, "GOTO");
@@ -368,38 +367,39 @@ char* nou_temporal(){
 }
 
 void emet_calculation(sym_value_type *s0, sym_value_type s1, sym_value_type s2, const char* oper){
-	char *oper_int = (char *)malloc(sizeof(char)*strlen(oper)+2); /*one xtra char for trailing zero */
-	char *oper_float = (char *)malloc(sizeof(char)*strlen(oper)+2);
-	strcpy(oper_int, oper);
-	strcpy(oper_float, oper);
-	strcat(oper_int, "I");
-	strcat(oper_float, "F");
+	char* op = (char *)malloc(sizeof(char)*strlen(oper)+2); /*one xtra char for trailing zero */
+	strcpy(op, oper);
 
 	if (s1.tipo==s2.tipo) {
 		s0->lloc=nou_temporal();
 		s0->tipo=s1.tipo;
-		char* op = s1.tipo==entero ? oper_int : oper_float;
+		if (s1.tipo==entero){
+			 strcat(op, "I");
+		} else {
+			 strcat(op, "F");
+		}
 		emet(5,s0->lloc, ":=", s1.lloc, op, s2.lloc);
+
 	}
 	else if (s1.tipo==real || s2.tipo==real){
+		strcat(op, "F");
 		s0->tipo=real;
 		if (s1.tipo==real) {
 			char *castedValue = nou_temporal();
 			emet(4, castedValue, ":=", "I2F", s2.lloc);
 			s0->lloc=nou_temporal();
-			emet(5,s0->lloc, ":=", s1.lloc, oper_float, castedValue);
+			emet(5,s0->lloc, ":=", s1.lloc, op, castedValue);
 		}
 		else if (s2.tipo==real){
 			char *castedValue = nou_temporal();
 			emet(4, castedValue, ":=", "I2F", s1.lloc);
 			s0->lloc=nou_temporal();
-			emet(5,s0->lloc, ":=", castedValue, oper_float, s2.lloc);
+			emet(5,s0->lloc, ":=", castedValue, op, s2.lloc);
 		}
 		else yyerror("OPERACION NO PERMITIDA");
 	}
 	else yyerror("OPERACION NO PERMITIDA");
-	free(oper_int);
-	free(oper_float);
+	free(op);
 }
 
 void emet_salto_condicional(sym_value_type s1, const char* operel, sym_value_type s2, char* line2jump){
