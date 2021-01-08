@@ -22,6 +22,7 @@ int st=1; /*siguiente temporal*/
 char* nou_temporal();
 void emet_calculation(sym_value_type *s0, sym_value_type s1, sym_value_type s2, const char* oper);
 void calcula_literal(sym_value_type *s0, sym_value_type s1, sym_value_type s2, const char* oper);
+sym_value_type clone_value(sym_value_type orig);
 void emet_salto_condicional(sym_value_type s1, const char* operel, sym_value_type s2, char* line2jump);
 ArrayList crea_lista(int num);
 ArrayList fusiona(ArrayList l1, ArrayList l2);
@@ -154,23 +155,12 @@ operacion_aritm_prec1: 	operacion_aritm_prec2 |
 operacion_aritm_prec2: operacion_aritm_base | operacion_aritm_prec2 POTENCIA operacion_aritm_base {
 		if ($3.tipo==entero){
 			int exponente = atoi($3.lloc);
-			sym_value_type temp, result;
-			temp.lloc = (char*)malloc(sizeof(char)*strlen($1.lloc)+2);
-			temp.agregado = (char*)malloc(sizeof(char)*strlen($1.lloc)+2);
-			strcpy(temp.lloc, $1.lloc);
-			strcpy(temp.agregado, $1.lloc);
-			temp.tipo = $1.tipo;
-			temp.is_id = $1.is_id;
+			sym_value_type temp = clone_value($1);			
 			int i;
-			for (i=0; i < exponente; i++){
-				emet_calculation(&result, $1, temp, "MUL");
-				if ($1.is_id==true){
-					fprintf(yyout, "lloc actual: %s\n", result.lloc);
-					strcpy(temp.lloc, result.lloc);
-				}
-				else strcpy(temp.agregado, result.agregado);
+			for (i=0; i < exponente-1; i++){
+				emet_calculation(&$$, $1, temp, "MUL");
+				temp = clone_value($$);
 			}	
-			$$ = result;
 		} else yyerror("OPERACION NO DISPONIBLE.");	
 };
 
@@ -383,6 +373,8 @@ char* nou_temporal(){
 void emet_calculation(sym_value_type *s0, sym_value_type s1, sym_value_type s2, const char* oper){
 	if (s1.is_id==false && s2.is_id==false) calcula_literal(s0,s1,s2,oper);
 	else {
+		s0->is_id=true;
+		s0->agregado=NULL; /*Reset agregado*/
 		char *value1 = s1.agregado!=NULL ? s1.agregado : s1.lloc;
 		char *value2 = s2.agregado!=NULL ? s2.agregado : s2.lloc;
 		char* op = (char *)malloc(sizeof(char)*strlen(oper)+2); /*one xtra char for trailing zero */
@@ -435,6 +427,7 @@ void emet_calculation(sym_value_type *s0, sym_value_type s1, sym_value_type s2, 
 
 /* Realiza el cálculo cuando los dos valores son literales*/
 void calcula_literal(sym_value_type *s0, sym_value_type s1, sym_value_type s2, const char* oper) {
+	s0->is_id=false;
 	float value1 = s1.agregado!=NULL ? atof(s1.agregado) : atof(s1.lloc);
 	float value2 = s2.agregado!=NULL ? atof(s2.agregado) : atof(s2.lloc);
 	float result;
@@ -455,6 +448,21 @@ void calcula_literal(sym_value_type *s0, sym_value_type s1, sym_value_type s2, c
 		s0->tipo=entero;
 		sprintf(s0->agregado, "%d", (int)result);
 	}
+}
+
+sym_value_type clone_value(sym_value_type orig) {
+	sym_value_type dest;
+	if (orig.lloc!=NULL){
+		dest.lloc = (char *) malloc(sizeof(char)*strlen(orig.lloc)+2);
+		strcpy(dest.lloc, orig.lloc);
+	}
+	if (orig.agregado!=NULL){
+		dest.agregado = (char *) malloc(sizeof(char)*strlen(orig.agregado)+2);
+		strcpy(dest.agregado, orig.agregado);
+	}
+	dest.is_id = orig.is_id;
+	dest.tipo = orig.tipo;
+	return dest;
 }
 
 void emet_salto_condicional(sym_value_type s1, const char* operel, sym_value_type s2, char* line2jump){
