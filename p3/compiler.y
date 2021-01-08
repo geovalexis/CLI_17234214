@@ -466,15 +466,55 @@ sym_value_type clone_value(sym_value_type orig) {
 }
 
 void emet_salto_condicional(sym_value_type s1, const char* operel, sym_value_type s2, char* line2jump){
-	if (s1.tipo==s2.tipo) {
+	if (strcmp(operel, "EQ")==0 || strcmp(operel, "NE")==0){
+		if (s1.tipo==s2.tipo) {
+			char *op= (char *)malloc(sizeof(char)*strlen(operel)+2);
+			strcpy(op, operel);
+			if (s1.tipo==entero) strcat(op, "I");
+		 	else strcat(op, "F");
+			emet(6, "IF", s1.lloc, op, s2.lloc, "GOTO", line2jump);
+			free(op);
+		}
+		else yyerror("Las dos variables tienen que tener el mismo tipo para realizar esta operación!");
+	} else {
 		char *op= (char *)malloc(sizeof(char)*strlen(operel)+2);
 		strcpy(op, operel);
-		if (s1.tipo==entero) strcat(op, "I");
-	 	else strcat(op, "F");
-		emet(6, "IF", s1.lloc, op, s2.lloc, "GOTO", line2jump);
+		if (s1.tipo==s2.tipo) {
+			if (s1.tipo==entero){
+				 strcat(op, "I");
+			} else {
+				 strcat(op, "F");
+			}
+			emet(6, "IF", s1.lloc, op, s2.lloc, "GOTO", line2jump);
+
+		} else if (s1.tipo==real || s2.tipo==real){
+			strcat(op, "F");
+			if (s1.tipo==real) {
+				char *castedValue;
+				if (s2.is_id==true) {
+					castedValue = nou_temporal();
+					emet(4, castedValue, ":=", "I2F", s2.lloc);
+				} else {
+					castedValue = (char *) malloc(sizeof(char)*5);
+					sprintf(castedValue, "%.1f", atof(s2.lloc));
+				}
+				emet(6, "IF", s1.lloc, op, s2.lloc, "GOTO", line2jump);
+			}
+			else if (s2.tipo==real){
+				char *castedValue;
+				if (s1.is_id==true) {
+					castedValue = nou_temporal();
+					emet(4, castedValue, ":=", "I2F", s1.lloc);
+				} else {
+					castedValue = (char *) malloc(sizeof(char)*5);
+					sprintf(castedValue, "%.1f", atof(s1.lloc));
+				}
+				emet(6, "IF", s1.lloc, op, s2.lloc, "GOTO", line2jump);
+			} else yyerror("OPERACION NO PERMITIDA");
+		} else yyerror("OPERACION NO PERMITIDA");
 		free(op);
+
 	}
-	else yyerror("Tienen que tener el mismo tipo!");
 
 }
 
