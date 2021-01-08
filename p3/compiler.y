@@ -21,6 +21,7 @@ void emet(int args_count, ...);
 int st=1; /*siguiente temporal*/
 char* nou_temporal();
 void emet_calculation(sym_value_type *s0, sym_value_type s1, sym_value_type s2, const char* oper);
+void calcula_literal(sym_value_type *s0, sym_value_type s1, sym_value_type s2, const char* oper);
 void emet_salto_condicional(sym_value_type s1, const char* operel, sym_value_type s2, char* line2jump);
 ArrayList crea_lista(int num);
 ArrayList fusiona(ArrayList l1, ArrayList l2);
@@ -87,7 +88,8 @@ sentencia_simple:  FIN_SENTENCIA| asignacion FIN_SENTENCIA {$$=$1;}| procedimien
 asignacion : id ASSIGN expresion_aritmetica { 
 				$1.value = $3;
 				sym_enter($1.nom, &$1.value);
-				emet(3, $1.nom, ":=", $3.lloc);
+				char *valor = $3.agregado!=NULL ? $3.agregado : $3.lloc;
+				emet(3, $1.nom, ":=", valor);
 }|
 			id ASSIGN expresion_bool {
 				$1.value.tipo = boolean;
@@ -117,10 +119,16 @@ expresion_aritmetica: operacion_aritm_prec1 |
 		expresion_aritmetica REST operacion_aritm_prec1 { emet_calculation(&($$), $1, $3, "SUB");}|
 		SUM operacion_aritm_prec1 {$$=$2;}|			
 		REST operacion_aritm_prec1 {
-			$$.lloc = nou_temporal();
 			$$.tipo = $2.tipo;
-			if ($2.tipo==entero) emet(4, $$.lloc, ":=", "CHSI", $2.lloc);
-			else emet(4, $$.lloc, ":=", "CHSF", $2.lloc);
+			if ($2.is_id==true) {
+				$$.lloc = nou_temporal();
+				if ($2.tipo==entero) emet(4, $$.lloc, ":=", "CHSI", $2.lloc);
+				else emet(4, $$.lloc, ":=", "CHSF", $2.lloc);
+			} else {
+				$$.agregado = (char *) malloc(sizeof(char)*5);
+				if ($2.tipo==entero) sprintf($$.agregado, "%d", atoi($2.lloc));
+				else sprintf($$.agregado, "%.1f", atof($2.lloc));
+			}
 }
 ;
 
@@ -148,13 +156,19 @@ operacion_aritm_prec2: operacion_aritm_base | operacion_aritm_prec2 POTENCIA ope
 			int exponente = atoi($3.lloc);
 			sym_value_type temp, result;
 			temp.lloc = (char*)malloc(sizeof(char)*strlen($1.lloc)+2);
+			temp.agregado = (char*)malloc(sizeof(char)*strlen($1.lloc)+2);
 			strcpy(temp.lloc, $1.lloc);
+			strcpy(temp.agregado, $1.lloc);
 			temp.tipo = $1.tipo;
+			temp.is_id = $1.is_id;
 			int i;
 			for (i=0; i < exponente; i++){
-				result.lloc=nou_temporal();
 				emet_calculation(&result, $1, temp, "MUL");
-				strcpy(temp.lloc, result.lloc);
+				if ($1.is_id==true){
+					fprintf(yyout, "lloc actual: %s\n", result.lloc);
+					strcpy(temp.lloc, result.lloc);
+				}
+				else strcpy(temp.agregado, result.agregado);
 			}	
 			$$ = result;
 		} else yyerror("OPERACION NO DISPONIBLE.");	
@@ -162,9 +176,9 @@ operacion_aritm_prec2: operacion_aritm_base | operacion_aritm_prec2 POTENCIA ope
 
 
 operacion_aritm_base: ABRIR_PAR expresion_aritmetica CERRAR_PAR { $$=$2;} |
-	   INTEGER { $$.tipo=entero; $$.lloc=$1;}|
-	   REAL { $$.tipo=real; $$.lloc=$1;} |
-	   ID_ARITM {sym_lookup($1.nom, &$1.value); $$.tipo=$1.value.tipo; $$.lloc=$1.nom; }
+	   INTEGER { $$.tipo=entero; $$.lloc=$1; $$.is_id=false;}|
+	   REAL { $$.tipo=real; $$.lloc=$1; $$.is_id=false;} |
+	   ID_ARITM {sym_lookup($1.nom, &$1.value); $$.tipo=$1.value.tipo; $$.lloc=$1.nom; $$.is_id=true;}
 ;
 
 expresion_bool: operacion_boolean_prec1 | 
@@ -367,39 +381,80 @@ char* nou_temporal(){
 }
 
 void emet_calculation(sym_value_type *s0, sym_value_type s1, sym_value_type s2, const char* oper){
-	char* op = (char *)malloc(sizeof(char)*strlen(oper)+2); /*one xtra char for trailing zero */
-	strcpy(op, oper);
+	if (s1.is_id==false && s2.is_id==false) calcula_literal(s0,s1,s2,oper);
+	else {
+		char *value1 = s1.agregado!=NULL ? s1.agregado : s1.lloc;
+		char *value2 = s2.agregado!=NULL ? s2.agregado : s2.lloc;
+		char* op = (char *)malloc(sizeof(char)*strlen(oper)+2); /*one xtra char for trailing zero */
+		strcpy(op, oper);
 
-	if (s1.tipo==s2.tipo) {
-		s0->lloc=nou_temporal();
-		s0->tipo=s1.tipo;
-		if (s1.tipo==entero){
-			 strcat(op, "I");
-		} else {
-			 strcat(op, "F");
-		}
-		emet(5,s0->lloc, ":=", s1.lloc, op, s2.lloc);
+		if (s1.tipo==s2.tipo) {
+			s0->lloc=nou_temporal();
+			s0->tipo=s1.tipo;
+			if (s1.tipo==entero){
+				 strcat(op, "I");
+			} else {
+				 strcat(op, "F");
+			}
+			emet(5,s0->lloc, ":=", value1, op, value2);
 
-	}
-	else if (s1.tipo==real || s2.tipo==real){
-		strcat(op, "F");
-		s0->tipo=real;
-		if (s1.tipo==real) {
-			char *castedValue = nou_temporal();
-			emet(4, castedValue, ":=", "I2F", s2.lloc);
-			s0->lloc=nou_temporal();
-			emet(5,s0->lloc, ":=", s1.lloc, op, castedValue);
 		}
-		else if (s2.tipo==real){
-			char *castedValue = nou_temporal();
-			emet(4, castedValue, ":=", "I2F", s1.lloc);
-			s0->lloc=nou_temporal();
-			emet(5,s0->lloc, ":=", castedValue, op, s2.lloc);
+		else if (s1.tipo==real || s2.tipo==real){
+			strcat(op, "F");
+			s0->tipo=real;
+			if (s1.tipo==real) {
+				char *castedValue;
+				if (s2.is_id==true) {
+					castedValue = nou_temporal();
+					emet(4, castedValue, ":=", "I2F", value2);
+				} else {
+					castedValue = (char *) malloc(sizeof(char)*5);
+					sprintf(castedValue, "%.1f", atof(value2));
+				}
+				s0->lloc=nou_temporal();
+				emet(5,s0->lloc, ":=", value1, op, castedValue);
+			}
+			else if (s2.tipo==real){
+				char *castedValue;
+				if (s1.is_id==true) {
+					castedValue = nou_temporal();
+					emet(4, castedValue, ":=", "I2F", value1);
+				} else {
+					castedValue = (char *) malloc(sizeof(char)*5);
+					sprintf(castedValue, "%.1f", atof(value1));
+				}
+				s0->lloc=nou_temporal();
+				emet(5,s0->lloc, ":=", castedValue, op, value2);
+			}
+			else yyerror("OPERACION NO PERMITIDA");
 		}
 		else yyerror("OPERACION NO PERMITIDA");
+		free(op);
 	}
-	else yyerror("OPERACION NO PERMITIDA");
-	free(op);
+}
+
+/* Realiza el cálculo cuando los dos valores son literales*/
+void calcula_literal(sym_value_type *s0, sym_value_type s1, sym_value_type s2, const char* oper) {
+	float value1 = s1.agregado!=NULL ? atof(s1.agregado) : atof(s1.lloc);
+	float value2 = s2.agregado!=NULL ? atof(s2.agregado) : atof(s2.lloc);
+	float result;
+
+	if (strcmp(oper, "MUL")==0) result = value1 * value2; 
+	else if (strcmp(oper, "DIV")==0) result = value1 / value2;
+	else if (strcmp(oper, "ADD")==0) result = value1 + value2;
+	else if (strcmp(oper, "SUB")==0) result = value1 - value2;
+	else if (strcmp(oper, "MOD")==0) result = (int)value1 % (int)value2;
+	else yyerror("OPERACION NO ENCONTRADA.");
+	
+	s0->agregado = (char *) malloc(sizeof(char)*5);
+	if (s1.tipo==real || s2.tipo==real){
+		s0->tipo=real;
+		sprintf(s0->agregado, "%.1f", result);
+	}
+	else { /* Both are integers*/
+		s0->tipo=entero;
+		sprintf(s0->agregado, "%d", (int)result);
+	}
 }
 
 void emet_salto_condicional(sym_value_type s1, const char* operel, sym_value_type s2, char* line2jump){

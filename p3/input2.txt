@@ -25,6 +25,8 @@ div := 10.5 / 4
 // Potencias
 pot := 2 ** 3
 pot := 2.5 ** 2
+x := 2
+power := x ** 2 
 
 // Operaciones combinadas
 x := 2 + 8 * 3 - 5

@@ -14,6 +14,8 @@
 /* The type of the value field of symbol table entries                      */
 typedef struct{
 	char *lloc;
+	char *agregado; 
+	bool is_id;
 	enum tipus{entero, real, boolean} tipo;
 }sym_value_type;          /* you will need to replace this    */
                                         /* with a declaration appropriate   */
