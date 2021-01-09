@@ -109,7 +109,6 @@ asignacion : id ASSIGN expresion_aritmetica {
 					$$ = fusiona($$, crea_lista(sq)); /*fusiona() por si en el anterior if se ha añadido algo*/
 					emet(1, "GOTO");
 				}
-				sym_enter($1.nom, &$1.value);
 };
 
 id: ID | ID_ARITM | ID_BOOL;
@@ -168,6 +167,8 @@ operacion_aritm_prec2: operacion_aritm_base | operacion_aritm_prec2 POTENCIA ope
 operacion_aritm_base: ABRIR_PAR expresion_aritmetica CERRAR_PAR { $$=$2;} |
 	   INTEGER { $$.tipo=entero; $$.lloc=$1; $$.is_id=false;}|
 	   REAL { $$.tipo=real; $$.lloc=$1; $$.is_id=false;} |
+	   BOOLEAN_TRUE { $$.tipo=boolean; $$.lloc="1"; $$.is_id=false;} |
+	   BOOLEAN_FALSE { $$.tipo=boolean; $$.lloc="0"; $$.is_id=false;} |
 	   ID_ARITM {sym_lookup($1.nom, &$1.value); $$.tipo=$1.value.tipo; $$.lloc=$1.nom; $$.is_id=true;}
 ;
 
@@ -197,18 +198,13 @@ operacion_boolean_base: ABRIR_PAR expresion_bool CERRAR_PAR { $$=$2;} |
 	   emet_salto_condicional($1, $2, $3, "");
 	   $$.llf = crea_lista(sq);
 	   emet(1, "GOTO");
-}|
-	   BOOLEAN_TRUE { 
-	   $$.llc = crea_lista(sq-1); /*emet(1, "GOTO");*/ /* -1 porque el emet se hará posteriorment*/
-}|
-	   BOOLEAN_FALSE {
-	   $$.llf = crea_lista(sq-1); /*emet(1, "GOTO");*/
 }|	
 	   ID_BOOL {	
-	sym_lookup($1.nom, &$1.value); 
-	if (strcmp($1.value.lloc, "0")==0) $$.llf = crea_lista(sq-1);
-	else if (strcmp($1.value.lloc, "1")==0) $$.llc = crea_lista(sq-1);
-	else yyerror("Boolean not valid");
+		sym_lookup($1.nom, &$1.value); 
+		$$.llc = crea_lista(sq);
+		emet(5, "IF", $1.nom, "EQ", "1", "GOTO");
+	   	$$.llf = crea_lista(sq);
+	   	emet(1, "GOTO");
 }
 ;
 
@@ -513,9 +509,7 @@ void emet_salto_condicional(sym_value_type s1, const char* operel, sym_value_typ
 			} else yyerror("OPERACION NO PERMITIDA");
 		} else yyerror("OPERACION NO PERMITIDA");
 		free(op);
-
 	}
-
 }
 
 

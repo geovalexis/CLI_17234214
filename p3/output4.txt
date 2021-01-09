@@ -31,15 +31,17 @@
 31:  GOTO 35
 32:  prova := 1 
 33:  i := i + 1 
-34:  GOTO 30 35
-35:  x := 1 
-36:  GOTO 37
-37:  IF i GTI 1 GOTO  43
+34:  GOTO 30 
+35:  x := 4 
+36:  y := 1 
+37:  IF y EQ 1 GOTO 45
 38:  GOTO 39
-39:  IF 3 GTI 5 GOTO  43
-40:  GOTO 41
-41:  y := 0 
+39:  IF x GTI 8 GOTO  41
+40:  GOTO 43
+41:  IF y EQ 1 GOTO 43
 42:  GOTO 45
-43:  y := 1 
-44:  GOTO 45
-45:  HALT
+43:  z := 0 
+44:  GOTO 47
+45:  z := 1 
+46:  GOTO 47
+47:  HALT

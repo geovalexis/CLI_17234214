@@ -25,6 +25,7 @@ for i in 1..10 do
 	prova := 1
 done
 
-x := true
-y := (i > 1) or ( 3 > 5 )
+x := 4
+y := true
+z := y or (x > 8 and not y)
 
