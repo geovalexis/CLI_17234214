@@ -62,7 +62,7 @@ void completa(ArrayList lista, int num);
 %token <cadena> INTEGER REAL 
 %token <expr_bool> BOOLEAN_TRUE BOOLEAN_FALSE
 %token <sent> FIN_SENTENCIA
-%token ASSIGN POTENCIA SUM REST MUL DIV MOD AND NEG OR ABRIR_PAR CERRAR_PAR GT LT GE LE EQ NE BOOL_TRUE BOOL_FALSE REPEAT WHILE FOR IN TO DO UNTIL DONE IF THEN ELSE FI
+%token ASSIGN POTENCIA SUM REST MUL DIV MOD AND NOT OR ABRIR_PAR CERRAR_PAR GT LT GE LE EQ NE BOOL_TRUE BOOL_FALSE REPEAT WHILE FOR IN TO DO UNTIL DONE IF THEN ELSE FI
 
 %type <expr_aritm> expresion_aritmetica  operacion_aritm_base operacion_aritm_prec1 operacion_aritm_prec2 P R 
 %type <expr_bool> expresion_bool operacion_boolean_prec1 operacion_boolean_prec2 operacion_boolean_base 
@@ -77,38 +77,41 @@ void completa(ArrayList lista, int num);
 
 programa: lista_sentencias {print_sentences();};
 
-lista_sentencias : lista_sentencias M sentencia {
-	   completa($1, $2);
-	   $$ = $3;
-}| sentencia;
+lista_sentencias : 
+		lista_sentencias M sentencia {
+		completa($1, $2);
+		$$ = $3;
+}|
+		sentencia;
 
 sentencia: sentencia_simple FIN_SENTENCIA | sentencias_iterativas FIN_SENTENCIA | sentencias_condicionales FIN_SENTENCIA | FIN_SENTENCIA;
 
 sentencia_simple:  asignacion {$$=$1;}| procedimientos {$$=$$;};
 
-asignacion : id ASSIGN expresion_aritmetica { 
-				$1.value = $3;
-				sym_enter($1.nom, &$1.value);
-				char *valor = $3.agregado!=NULL ? $3.agregado : $3.lloc;
-				emet(3, $1.nom, ":=", valor);
+asignacion : 	
+		id ASSIGN expresion_aritmetica { 
+		$1.value = $3;
+		sym_enter($1.nom, &$1.value);
+		char *valor = $3.agregado!=NULL ? $3.agregado : $3.lloc;
+		emet(3, $1.nom, ":=", valor);
 }|
-			id ASSIGN expresion_bool {
-				$1.value.tipo = boolean;
-				if ($3.llf.size > 0) {
-					$1.value.lloc = "0";
-					completa($3.llf, sq);
-					emet(3, $1.nom, ":=", "0");
-					$$ = crea_lista(sq);
-					emet(1, "GOTO");
-				}
+		id ASSIGN expresion_bool {
+		$1.value.tipo = boolean;
+		if ($3.llf.size > 0) {
+			$1.value.lloc = "0";
+			completa($3.llf, sq);
+			emet(3, $1.nom, ":=", "0");
+			$$ = crea_lista(sq);
+			emet(1, "GOTO");
+		}
 
-				if ($3.llc.size > 0) {
-					$1.value.lloc = "1";
-					completa($3.llc, sq);
-					emet(3, $1.nom, ":=", "1");
-					$$ = fusiona($$, crea_lista(sq)); /*fusiona() por si en el anterior if se ha añadido algo*/
-					emet(1, "GOTO");
-				}
+		if ($3.llc.size > 0) {
+			$1.value.lloc = "1";
+			completa($3.llc, sq);
+			emet(3, $1.nom, ":=", "1");
+			$$ = fusiona($$, crea_lista(sq)); /*fusiona() por si en el anterior if se ha añadido algo*/
+			emet(1, "GOTO");
+		}
 };
 
 id: ID | ID_ARITM | ID_BOOL;
@@ -187,19 +190,20 @@ operacion_boolean_prec1: operacion_boolean_prec2 |
 }; 
 
 operacion_boolean_prec2: operacion_boolean_base | 
-		NEG operacion_boolean_prec2 {
+		NOT operacion_boolean_prec2 {
 		$$.llc=$2.llf;
 		$$.llf=$2.llc;
 }; 
 
-operacion_boolean_base: ABRIR_PAR expresion_bool CERRAR_PAR { $$=$2;} | 
-	   expresion_aritmetica operel expresion_aritmetica {
-	   $$.llc = crea_lista(sq);
-	   emet_salto_condicional($1, $2, $3, "");
-	   $$.llf = crea_lista(sq);
-	   emet(1, "GOTO");
+operacion_boolean_base: 
+		ABRIR_PAR expresion_bool CERRAR_PAR { $$=$2;} | 
+		expresion_aritmetica operel expresion_aritmetica {
+		$$.llc = crea_lista(sq);
+		emet_salto_condicional($1, $2, $3, "");
+		$$.llf = crea_lista(sq);
+		emet(1, "GOTO");
 }|	
-	   ID_BOOL {	
+		ID_BOOL {	
 		sym_lookup($1.nom, &$1.value); 
 		$$.llc = crea_lista(sq);
 		emet(5, "IF", $1.nom, "EQ", "1", "GOTO");
@@ -217,18 +221,20 @@ sentencia_iterativa_incondicional: REPEAT expresion_aritmetica R M DO lista_sent
 	else if ($3.tipo==real) emet(5, $3.lloc, ":=", $3.lloc, "ADDF", "1");
 	else yyerror("Bad request");
 	char *temp_sq = malloc(sizeof(char)*5);
-    sprintf(temp_sq, "%d", $4);     
+	sprintf(temp_sq, "%d", $4);     
 	emet_salto_condicional($3, "LT", $2, temp_sq);
 };
 
-sentencia_iterativa_condicional: WHILE M expresion_bool DO M lista_sentencias DONE {
+sentencia_iterativa_condicional: 
+	WHILE M expresion_bool DO M lista_sentencias DONE {
 	completa($3.llc, $5);
 	completa($6, $2);
 	$$= $3.llf;
 	char *m_buffer = malloc(sizeof(char)*5);
-    sprintf(m_buffer, "%d", $2); 
+	sprintf(m_buffer, "%d", $2); 
 	emet(2, "GOTO", m_buffer);
-}| DO M lista_sentencias UNTIL expresion_bool {
+}| 	
+	DO M lista_sentencias UNTIL expresion_bool {
 	completa($5.llc, $2);
 	$$= $5.llf;			
 };
@@ -237,7 +243,7 @@ sentencia_iterativa_indexada: Q DO lista_sentencias DONE {
 	completa($3, sq);
 	emet(5,$1.lloc, ":=", $1.lloc, "+", "1");
 	char *quad_buffer = malloc(sizeof(char)*5);
-    sprintf(quad_buffer, "%d", $1.quad); 
+	sprintf(quad_buffer, "%d", $1.quad); 
 	emet(2, "GOTO", quad_buffer);
 	$$ = $1.lls;
 };
@@ -245,7 +251,7 @@ sentencia_iterativa_indexada: Q DO lista_sentencias DONE {
 Q: P TO expresion_aritmetica {
 	$$.quad = sq;
 	char *quad_buffer = malloc(sizeof(char)*5);
-    sprintf(quad_buffer, "%d", sq+2); 
+	sprintf(quad_buffer, "%d", sq+2); 
 	emet_salto_condicional($1, "LE", $3, quad_buffer);
 	$$.lls = crea_lista(sq);
 	emet(1, "GOTO");
@@ -270,26 +276,27 @@ sentencias_condicionales: IF expresion_bool THEN M lista_sentencias FI {
 
 /* Guarda el quat actual */
 M: {
-   $$=sq;
+	$$=sq;
 };
 
 /* Crea lista de siguientes */
 N: {
-   $$=crea_lista(sq);
-   emet(1, "GOTO");
+	$$=crea_lista(sq);
+	emet(1, "GOTO");
 };
 
 /* R contendrá la información del contador del bucle*/
-R: {$$.lloc = malloc(sizeof(char)*5);
-     $$.tipo = entero; /*Un contador siempre es un entero*/
-     strcpy($$.lloc, nou_temporal());
-     emet(3, $$.lloc, ":=", "0");
+R: {
+	$$.lloc = malloc(sizeof(char)*5);
+	$$.tipo = entero; /*Un contador siempre es un entero*/
+	strcpy($$.lloc, nou_temporal());
+	emet(3, $$.lloc, ":=", "0");
 };
 
 
 procedimientos: put;
 
-put: ID_ARITM {
+put: id {
 	sym_lookup($1.nom, &$1.value);
 	emet(2, "PARAM", $1.nom);
 	char* oper = malloc(sizeof(char)*5);
@@ -302,68 +309,68 @@ put: ID_ARITM {
 %%
 
 void print_sentences(){
-   int i;
-   for (i=1; i < sq; i++)
+	int i;
+	for (i=1; i < sq; i++)
 	fprintf(yyout, "%d:  %s\n", i, matriz_sentencias[i]);
-   fprintf(yyout, "%d:  HALT\n", sq);
+	fprintf(yyout, "%d:  HALT\n", sq);
 
 }
 
 ArrayList crea_lista(int num){
-   ArrayList temp;
-   temp.lista = malloc(YYLMAX*sizeof(int));
-   temp.lista[0]=num;
-   temp.size = 1;
-   return temp;
+	ArrayList temp;
+	temp.lista = malloc(YYLMAX*sizeof(int));
+	temp.lista[0]=num;
+	temp.size = 1;
+	return temp;
 }
 
 ArrayList fusiona(ArrayList l1, ArrayList l2){
-  ArrayList temp;
-  temp.lista = malloc(YYLMAX*sizeof(int));
-  int i;
-  for (i=0; i < l1.size; i++){
+	ArrayList temp;
+	temp.lista = malloc(YYLMAX*sizeof(int));
+	int i;
+	for (i=0; i < l1.size; i++){
 	temp.lista[i]=l1.lista[i];
-  }
-  int j;
-  for (j=0; j < l2.size; j++){
+	}
+	int j;
+	for (j=0; j < l2.size; j++){
 	temp.lista[i]=l2.lista[j];
-    i++;
-  }
+	i++;
+	}
 
-  temp.size = l1.size + l2.size;
-  return temp;
+	temp.size = l1.size + l2.size;
+	return temp;
 }
 
 void completa(ArrayList lista, int num){
-  int i;
-  char* num_buffer = malloc(sizeof(char)*5);
-  sprintf(num_buffer, "%d", num);
-  for (i=0; i < lista.size; i++){
+	int i;
+	char* num_buffer = malloc(sizeof(char)*5);
+	sprintf(num_buffer, "%d", num);
+	for (i=0; i < lista.size; i++){
 	strcat(matriz_sentencias[lista.lista[i]],num_buffer);
-  }
+	}
 }
 
 
 void emet(int args_count, ...){
-    va_list args; 
-    va_start(args, args_count); 
-    char *buffer = malloc(sizeof(char)*SENTENCE_MAX_LENGTH+1);
-    int i;
-    for (i=0; i < args_count; i++){  
-         strcat(buffer,va_arg(args, char*)); 
-         strcat(buffer," ");
-    }
-    matriz_sentencias[sq] = buffer;
-    sq++;
-    va_end(args); 
+	va_list args; 
+	va_start(args, args_count); 
+	char *buffer = malloc(sizeof(char)*SENTENCE_MAX_LENGTH+1);
+	int i;
+	for (i=0; i < args_count; i++){  
+	 strcat(buffer,va_arg(args, char*)); 
+	 strcat(buffer," ");
+	}
+	matriz_sentencias[sq] = buffer;
+	sq++;
+	va_end(args); 
 
 }
 
 char* nou_temporal(){
-  char* buffer = (char *) malloc(sizeof(char)*3+sizeof(int));
-  sprintf(buffer, "$t0%d", st);
-  st++;
-  return buffer;
+	char* buffer = (char *) malloc(sizeof(char)*3+sizeof(int));
+	sprintf(buffer, "$t0%d", st);
+	st++;
+	return buffer;
 }
 
 void emet_calculation(sym_value_type *s0, sym_value_type s1, sym_value_type s2, const char* oper){
@@ -434,7 +441,7 @@ void calcula_literal(sym_value_type *s0, sym_value_type s1, sym_value_type s2, c
 	else if (strcmp(oper, "SUB")==0) result = value1 - value2;
 	else if (strcmp(oper, "MOD")==0) result = (int)value1 % (int)value2;
 	else yyerror("OPERACION NO ENCONTRADA.");
-	
+
 	s0->agregado = (char *) malloc(sizeof(char)*5);
 	if (s1.tipo==real || s2.tipo==real){
 		s0->tipo=real;
@@ -514,51 +521,32 @@ void emet_salto_condicional(sym_value_type s1, const char* operel, sym_value_typ
 
 
 int init_analisi_sintactic(char* filename){
-
 	int error = EXIT_SUCCESS;
-
 	yyout = fopen(filename,"w");
-
 	if (yyout == NULL){
-
-	error = EXIT_FAILURE;
-
+		error = EXIT_FAILURE;
 	}
-
 	return error;
-
 }
 
 int analisi_semantic(){
 	int error;
-
-	 if (yyparse() == 0)
-	 {
-	 error =  EXIT_SUCCESS;
-	 } else {
-	 error =  EXIT_FAILURE;
-	 }
-
-	 return error;
+	if (yyparse() == 0) error =  EXIT_SUCCESS;
+	else error =  EXIT_FAILURE;
+	return error;
 
 }
 
 int end_analisi_sintactic(){
 
-int error;
-
-error = fclose(yyout);
-
-if(error == 0){
- error = EXIT_SUCCESS;
-}else{
- error = EXIT_FAILURE;
-}
-
-return error;
+	int error;
+	error = fclose(yyout);
+	if(error == 0) error = EXIT_SUCCESS;
+	else error = EXIT_FAILURE;
+	return error;
 
 }
 
 void yyerror(const char *explanation){
-fprintf(stderr,"Error: %s ,in line %d \n",explanation,yylineno);
+	fprintf(stderr,"Error: %s ,in line %d \n",explanation,yylineno);
 }
