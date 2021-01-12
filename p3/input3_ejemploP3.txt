@@ -14,18 +14,3 @@ while total < 1000.0 do
 done
 total
 
-do
-	i := 2
-	j := 3
-    k := 4
-until total < 1000.0
-
-
-for i in 1..10 do
-	prova := 1
-done
-
-x := 4
-y := true
-z := y or (x > 8 and not y)
-

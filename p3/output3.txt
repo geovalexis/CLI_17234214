@@ -1,13 +1,24 @@
-1:  imprimir := 8.3 
-2:  PARAM imprimir 
-3:  CALL PUTF, 1 
-4:  n := 3 
-5:  i := 0 
-6:  $t01 := 0 
-7:  $t02 := i ADDI 1 
-8:  i := $t02 
-9:  $t01 := $t01 ADDI 1 
-10:  IF $t01 LTI n GOTO 7 
-11:  PARAM i 
-12:  CALL PUTI, 1 
-13:  HALT
+1:  i := 1 
+2:  $t01 := I2F i 
+3:  $t02 := 1.0 SUBF $t01 
+4:  total := $t02 
+5:  IF total LTF 1000.0 GOTO  7
+6:  GOTO 22
+7:  IF i EQI 1 GOTO  9
+8:  GOTO 12
+9:  $t03 := total MULF 2.0 
+10:  total := $t03 
+11:  GOTO 14
+12:  $t04 := total SUBF 1.0 
+13:  total := $t04 
+14:  $t05 := CHSI i 
+15:  i := $t05 
+16:  IF total GTF 666.6 GOTO  20
+17:  GOTO 18
+18:  IF total EQF 500.0 GOTO  20
+19:  GOTO 5
+20:  i := 111 
+21:  GOTO 5 
+22:  PARAM total 
+23:  CALL PUTF, 1 
+24:  HALT

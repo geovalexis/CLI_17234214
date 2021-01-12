@@ -1,0 +1,25 @@
+// Operaciones arimeticas con literales
+suma := 2.1 + 3
+resta := 8 - 2.5
+mul := 3 * 3.5
+div := 8 / 4.0
+potencia := 2 ** 3
+modulo := 9 mod 2
+
+// Operaciones arimeticas con variables
+x := 2.0
+y := 4
+z := 10.5
+suma := x + y
+resta := y - x
+mul := z * x
+div := y / x
+potencia := x ** y
+modulo := y mod 3
+
+// Operaciones combinadas
+oper1 := x * y + ( z / 2 ) - 8 - y
+oper2 := x ** 3 + 15 / 3 - 14 mod y
+oper3 := (12 - z) * y - 3 * x
+oper4 := z / x + 5 - y ** 2 + 6
+

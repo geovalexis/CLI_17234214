@@ -1,0 +1,21 @@
+/*Comentarios 
+en 
+diferentes 
+lineas*/
+
+// sentencias iterativas
+total := 10
+do
+	z := 2
+until total < 1000.0
+
+
+for i in 1..10 do
+	z := 1
+done
+
+// Variables booleanas
+x := 4
+y := true
+z := y or (x > 8 and not y)
+
