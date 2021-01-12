@@ -82,9 +82,9 @@ lista_sentencias : lista_sentencias M sentencia {
 	   $$ = $3;
 }| sentencia;
 
-sentencia: sentencia_simple | sentencias_iterativas | sentencias_condicionales;
+sentencia: sentencia_simple FIN_SENTENCIA | sentencias_iterativas FIN_SENTENCIA | sentencias_condicionales FIN_SENTENCIA | FIN_SENTENCIA;
 
-sentencia_simple:  FIN_SENTENCIA| asignacion FIN_SENTENCIA {$$=$1;}| procedimientos FIN_SENTENCIA {$$=$2;};
+sentencia_simple:  asignacion {$$=$1;}| procedimientos {$$=$$;};
 
 asignacion : id ASSIGN expresion_aritmetica { 
 				$1.value = $3;

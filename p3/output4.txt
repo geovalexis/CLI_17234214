@@ -16,7 +16,7 @@
 16:  IF total GTF 666.6 GOTO  20
 17:  GOTO 18
 18:  IF total EQF 500.0 GOTO  20
-19:  GOTO 21
+19:  GOTO 5
 20:  i := 111 
 21:  GOTO 5 
 22:  PARAM total 
