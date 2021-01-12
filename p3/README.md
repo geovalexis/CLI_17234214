@@ -1,5 +1,6 @@
-# PRACTICA 2: Compilador de un lenguaje sencillo
-> **AUTOR**: Geovanny Risco <br/>
+# PRACTICA 3: Creación de un lenguaje completo
+> **AUTOR**: Geovanny Risco
+
 > **GRADO**: Doble Grado de Ingenería Informática y Biotecnología
 ## Requerimientos previos
 La siguiente práctica se ha realizado utilizando la imagen milax-debian v20200214 bajo el motor de virtualización de VirtualBox v6.1. De esta imagen se utilizaron las siguientes utilidades:
@@ -9,7 +10,7 @@ La siguiente práctica se ha realizado utilizando la imagen milax-debian v202002
 
 ## Especificaciones
 Los 3 ficheros principales son:
-* **compiler.c**: main del compilador, se encarga de la ejecucion del flex y bison asi como de presentar cualquier error que puedan derivarse de estos.
+* **compiler.c**: main del compilador. Se encarga de la ejecucion del flex y bison asi como de presentar cualquier error que puedan derivarse de estos.
 * **compiler.l**: implementación del análisis léxico (flex).
 * **compiler.y**: implementación de la gramática (bison).
 
@@ -19,25 +20,27 @@ A parte de éstos ficheros principales también existen otros que, aunque menos 
 
 ## Decisiones de diseño
 ### Análisis léxico:
-Ha cogido gran parte del código de la anterior entrega (calculadora) eliminando todas aquellas partes que no se utilizan ahora (toda la parte de booleanos). Al igual que en la entrega anterior, el código del flex es bastante explicativo por sí mismo (y tengo comentarios en aquellas partes más extensas). El único detalle a tener en cuenta es:
-* Devuelvo un token ```FIN DE SENTENCIA``` para identificar correctamente cuando acaba una sentencia y tambien poder saltarme las lineas en blanco y comentarios.
+Practicamente igual que en la anterior entrega pero con las respectivas definiciones para los literales booleanos, sentencias iterativas (while, for, do-until) y condicionales (if, if-else) añadidas. También es importante destacar de esta parte que a la hora de parsear los identificadores diferencio entre ID booleano (ID_BOOL), ID aritmético (ID_ARITM) e ID nuevo (ID). Este último caso se trata de un ID del cual no sabemos su tipo porque no se ha inicializado todavía dado que es un identificador nuevo (el tipo se asigna en la gramática).
 
 ### Tabla de símbolos:
-El archivo ```symtab.h``` si que cambia ligeramente respecto a la entrega anterior. Esta vez no tengo una estructura union segun el tipo de variable, ya que ahora el compilador no va a realizar las operaciones sino que simplemente se va encargar de especificar en C3A la operación a realizar junto a los valores asignados, y por tanto tan solo necesito guardar el "valor" o "nombre" de la variable en cuestión. Para ello tengo una variable llamada ```lloc``` que es del tipo string (```char*``` en C), y tambien un enumerado que me indica el datatype de la variable.
+Además de las variables ```lloc``` y ```tipo```, se han añadido dos variables más a la structura del ```sym_value_type```: 
+* ```agregado```: se trata de una string que contendrá el valor "agregado" de una operación. Aqui se guardarán los resultados de aquellas operaciones que se puedan realizar en tiempo de ejecución (literales enteros o reales). Si esta variable esta a ```NULL```, no será utilizada, ya que se asume que no hay ningún valor agregado, pero por el contrario si tiene algún valor se priorizará utilizar esta variable antes que ```lloc```.
+* ```is_id```: esta variable es necesaria para evitar intentar realizar operaciones en tiempo de ejecución con identificadores, ya que éste no es el objetivo del compilador. No he encontrado otra forma de realizar esta omprobación ya que mi gramática no diferencia entre ID_aritm o cualquier otro literal aritmético (INTEGER o REAL).
+
 ### Análisis sintáctico:
-Es este caso me gustaría destacar que tengo dos funciones que me hacen la mayor parte del trabajo: ```emet_calculation``` y ```emet_salto_condicional```. Estas funciones comprueban el tipo y emiten (con la función ```emet```) el C3A correspondiente. De esta manera no tengo tanto código repetido y puedo reaprovechar bastante código (en la anterior entrega no podía hacer esto por el tema de las operaciones). 
-El resto de funciones y variables las he hecho de acuerdo a lo explicado en clase. Es posible que algunas sentencias no tengan una funcionalidad clara ahora mismo, pero esto es porque lo he hecho pensando en la siguiente entrega. 
+En este caso la parte aritmética se encuentra prácticamente igual que en la anterior entrega. Mantengo las funciones ```emet_calculation``` y ```emet_salto_condicional```, las cuales me ahorran mucho código entre medio de las declaraciones. No obstante, las he mejorado y testado signficamente respecto a la anterior práctica, e incluso ahora desde ````emet_calculation```` llamo a una nueva función llamada ```calcula_literal```, la cual se encarga de realizar las correspondientes operaciones aritméticas cuando ambos son literales enteros o de coma flotante.
+Toda la parte de expresiones booleanas, sentencias iterativas y condicionales se encuentra implementado tal cual lo hemos visto en clase. Lo único a destacar tal vez sea que yo he decido poner los literales booleanos (true y false) en la parte aritmética, de forma que las asignaciones de realizan de forma directa, y despues en la parte de expresiones booleanas trato los identificadores booleanos correctamente.
 ## Ejecución
 ### 1. Compilacion
 Para la compilación del programa es necesario ejecutar los siguientes comandos:
 ```bash
 make all
 ```
-Se generán diferentes ficheros intermedios pero el archivo que nos interesará es el que tiene de nombre ```calc```. Probablemente salten un monton de warnings pero todos estos son debido a temas ajenos a la sintaxis y grámatica implementada.
+Se generán diferentes ficheros intermedios pero el archivo principal que es el que tiene de nombre ```compiler``` (sin extensión). Probablemente salten un monton de warnings pero la mayor parte son debido a temas de C y sus limitaciones. No debería de saltar ningún error de shift/reduce.
 ### 2. Ejecucion
 Una vez compilado podremos ejecutar el programa mediante:
 ```bash
-./calc input1.txt output1.txt
+./compiler input1.txt output1.txt
 ``` 
 ### 3. Limpieza (opcional)
 En caso de que queramos limpiar todos los archivos resultantes de la compilación, realizar lo siguiente:
@@ -45,7 +48,12 @@ En caso de que queramos limpiar todos los archivos resultantes de la compilació
 make clean
 ```
 ## Resultados
-A modo de juego de pruebas tengo 3 archivos llamados ```input1.txt```, ```input2.txt``` y ```input3.txt```, cuya correcta ejecución debería de producir los resultados espeficados en ```output1.txt```, ```output2.txt``` y ```output3.txt``` respectivamente. El ```input1.txt``` es el correspondiente al enunciado de la práctica. Los otros dos son pruebas aleatorias de funcionamiento (en los comentarios de cada input se indica la intención de cada prueba).
-## Limitaciones (TODOs)
-* Es posible que se puedan tratar y especificar mas posibles errores.
-* No estan implementadas las funciones opcionales.
+A modo de juego de pruebas tengo 4 ficheros de test:
+* ```input1_operaciones_aritmeticas.txt```: operaciones aritméticas tanto de literales como de identificadores y combinados.
+* ```input2_ejemploP2.txt```: input de ejemplo del enunciado de la práctica 2.
+* ```input3_ejemploP3.txt```: input de ejemplo del enunciado de la práctica 3.
+* ```input4_otros.txt```: pruebas variadas.
+
+## Limitaciones
+* Podría tratar y mostrar más información sobre errores.
+* De las partes opcionales solo están implementadas la evaluación de variables booleanas y de expresiones que solo involucren literales, el resto no estan implementadas. 
