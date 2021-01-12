@@ -27,6 +27,7 @@ void emet_salto_condicional(sym_value_type s1, const char* operel, sym_value_typ
 ArrayList crea_lista(int num);
 ArrayList fusiona(ArrayList l1, ArrayList l2);
 void completa(ArrayList lista, int num);
+bool check_if_zero(sym_value_type value);
 %}
 
 %code requires {
@@ -139,7 +140,7 @@ expresion_aritmetica: operacion_aritm_prec1 |
 operacion_aritm_prec1: 	operacion_aritm_prec2 | 
 		operacion_aritm_prec1 MUL operacion_aritm_prec2 {emet_calculation(&($$), $1, $3, "MUL");}|
 		operacion_aritm_prec1 DIV operacion_aritm_prec2 {
-		if (($3.tipo==entero && atoi($3.lloc)==0) || ($3.tipo==real && atof($3.lloc)==0)){
+		if (check_if_zero($1)==true || check_if_zero($3)==true) {
 			yyerror("No se puede dividir entre 0");
 		}	
 		else {	
@@ -386,16 +387,18 @@ void emet_calculation(sym_value_type *s0, sym_value_type s1, sym_value_type s2, 
 		if (s1.tipo==s2.tipo) {
 			s0->lloc=nou_temporal();
 			s0->tipo=s1.tipo;
-			if (s1.tipo==entero){
-				 strcat(op, "I");
-			} else {
-				 strcat(op, "F");
+			if (strcmp(op, "MOD")!=0) {	
+				if (s1.tipo==entero){
+					 strcat(op, "I");
+				} else {
+					 strcat(op, "F");
+				}
 			}
 			emet(5,s0->lloc, ":=", value1, op, value2);
 
 		}
 		else if (s1.tipo==real || s2.tipo==real){
-			strcat(op, "F");
+			if (strcmp(op, "MOD")!=0) strcat(op, "F");
 			s0->tipo=real;
 			if (s1.tipo==real) {
 				char *castedValue;
@@ -517,6 +520,17 @@ void emet_salto_condicional(sym_value_type s1, const char* operel, sym_value_typ
 		} else yyerror("OPERACION NO PERMITIDA");
 		free(op);
 	}
+}
+
+bool check_if_zero(sym_value_type value) {
+	int value_int;
+	if (value.is_id==true){
+		sym_value_type aux;
+		sym_lookup(value.lloc, &aux);
+		value_int = atoi(aux.lloc);
+	}
+	else value_int = atoi(value.lloc);
+	return value_int==0;
 }
 
 
