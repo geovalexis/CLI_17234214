@@ -1,6 +1,5 @@
 # PRACTICA 3: Creación de un lenguaje completo
-> **AUTOR**: Geovanny Risco
-
+> **AUTOR**: Geovanny Risco <br/>
 > **GRADO**: Doble Grado de Ingenería Informática y Biotecnología
 ## Requerimientos previos
 La siguiente práctica se ha realizado utilizando la imagen milax-debian v20200214 bajo el motor de virtualización de VirtualBox v6.1. De esta imagen se utilizaron las siguientes utilidades:
@@ -23,7 +22,7 @@ A parte de éstos ficheros principales también existen otros que, aunque menos 
 Practicamente igual que en la anterior entrega pero con las respectivas definiciones para los literales booleanos, sentencias iterativas (while, for, do-until) y condicionales (if, if-else) añadidas. También es importante destacar de esta parte que a la hora de parsear los identificadores diferencio entre ID booleano (ID_BOOL), ID aritmético (ID_ARITM) e ID nuevo (ID). Este último caso se trata de un ID del cual no sabemos su tipo porque no se ha inicializado todavía dado que es un identificador nuevo (el tipo se asigna en la gramática).
 
 ### Tabla de símbolos:
-Además de las variables ```lloc``` y ```tipo```, se han añadido dos variables más a la structura del ```sym_value_type```: 
+Además de las variables ```lloc``` y ```tipo```, se han añadido dos variables más a la estructura del ```sym_value_type```: 
 * ```agregado```: se trata de una string que contendrá el valor "agregado" de una operación. Aqui se guardarán los resultados de aquellas operaciones que se puedan realizar en tiempo de ejecución (literales enteros o reales). Si esta variable esta a ```NULL```, no será utilizada, ya que se asume que no hay ningún valor agregado, pero por el contrario si tiene algún valor se priorizará utilizar esta variable antes que ```lloc```.
 * ```is_id```: esta variable es necesaria para evitar intentar realizar operaciones en tiempo de ejecución con identificadores, ya que éste no es el objetivo del compilador. No he encontrado otra forma de realizar esta omprobación ya que mi gramática no diferencia entre ID_aritm o cualquier otro literal aritmético (INTEGER o REAL).
 
